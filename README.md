@@ -111,6 +111,29 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 
 ---
 
+## 🌟 Features Overview
+
+| Feature Area | Description | Status |
+| :--- | :--- | :---: |
+| **Modern Desktop UI** | Dark charcoal developer theme (VS Code/Antigravity style) with amber pill accents, high-DPI scaling, and zero flickering. | ✅ Complete |
+| **3-Part Workspace** | Left collapsible navigation sidebar, dynamic center view stack, persistent right agent status panel, and bottom system status bar. | ✅ Complete |
+| **11 Dedicated Views** | Home, Agent Chat, Tasks, Files, Browser, Coding Workspace, Workflows, Voice, Memory, History, and Settings. | ✅ Complete |
+| **Local LLM Engine** | Direct integration with local Ollama service (`http://localhost:11434`) without external cloud dependencies. | ✅ Complete |
+| **NVIDIA GPU Offloading** | 70% GPU / 30% CPU hybrid layer distribution on RTX 3050 6GB; ~18.3–20.4 tokens/second generation speed. | ✅ Complete |
+| **Live Token Streaming** | Progressive text emission via asynchronous `QThread` worker; supports both reasoning `<think>` tokens and final content. | ✅ Complete |
+| **Agent Tool Engine** | Safe, multi-round tool calling pipeline with JSON schema validation, permissions, and timeout containment. | ✅ Complete |
+| **Built-in System Tools** | Real-time system inspection: `get_current_time`, `get_system_info`, `get_gpu_info`. | ✅ Complete |
+| **Filesystem Safety Guard** | Hard blocks on `C:\Windows`, `System32`, `Program Files`, traversal protection, and canonical path resolution. | ✅ Complete |
+| **Read-Only File Tools** | 6 auto-approved tools: `search_files`, `list_directory`, `get_file_info`, `read_text_file`, `find_recent_files`, `find_large_files`. | ✅ Complete |
+| **Controlled File Writes** | Verified `copy_file`, `move_file`, `rename_file`, `create_directory` with strict post-execution verification. | ✅ Complete |
+| **Smart File Organization** | Preview-first category sorting (`organize_files_preview`, `organize_files`) across Documents, Images, Code, etc. | ✅ Complete |
+| **Interactive Confirmation UI** | In-chat `ConfirmationCardWidget` requiring explicit `[✓ Approve & Execute]` or `[✕ Reject]` for disk writes. | ✅ Complete |
+| **Instant Interruption** | Responsive "Stop Generating" (`⏹`) control that cancels network socket operations and tool execution immediately. | ✅ Complete |
+| **Persistent Storage** | SQLite-backed database storing tasks, memories, activity history, chat messages, and tool executions. | ✅ Complete |
+| **Live Hardware Monitor** | Background polling of CPU %, RAM %, GPU utilization %, VRAM allocation, and GPU temperature. | ✅ Complete |
+
+---
+
 ## 📁 Phase 2.2.2 — File Intelligence & Safe File Operations
 
 Phase 2.2.2 elevates Personal Agent into a capable, filesystem-aware desktop assistant. It can discover, inspect, read, organize, and manipulate local files while maintaining absolute security boundaries and requiring user confirmation for every modification.
@@ -191,24 +214,6 @@ Personal Agent can organize cluttered directories (such as Downloads) automatica
 8. **Other**: Uncategorized files
 
 **Preview-First Guarantee**: Calling `organize_files_preview` provides the proposed plan first. If approved via `organize_files`, typed subfolders are created and files are relocated without overwriting existing files.
-
----
-
-## 🌟 Features Overview
-
-| Feature Area | Description | Status |
-| :--- | :--- | :---: |
-| **Modern Desktop UI** | Dark charcoal developer theme (VS Code/Antigravity style) with amber pill accents, high-DPI scaling, and zero flickering. | ✅ Complete |
-| **3-Part Workspace** | Left collapsible navigation sidebar, dynamic center view stack, persistent right agent status panel, and bottom system status bar. | ✅ Complete |
-| **11 Dedicated Views** | Home, Agent Chat, Tasks, Files, Browser, Coding Workspace, Workflows, Voice, Memory, History, and Settings. | ✅ Complete |
-| **Local LLM Engine** | Direct integration with local Ollama service (`http://localhost:11434`) without external cloud dependencies. | ✅ Complete |
-| **NVIDIA GPU Offloading** | 70% GPU / 30% CPU hybrid layer distribution on RTX 3050 6GB; ~18.3–20.4 tokens/second generation speed. | ✅ Complete |
-| **Live Token Streaming** | Progressive text emission via asynchronous `QThread` worker; supports both reasoning `<think>` tokens and final content. | ✅ Complete |
-| **Agent Tool Engine** | Safe, multi-round tool calling pipeline with JSON schema validation, permissions, and timeout containment. | ✅ Complete |
-| **Built-in System Tools** | Real-time system inspection: `get_current_time`, `get_system_info`, `get_gpu_info`. | ✅ Complete |
-| **Instant Interruption** | Responsive "Stop Generating" (`⏹`) control that cancels network socket operations and tool execution immediately. | ✅ Complete |
-| **Persistent Storage** | SQLite-backed database storing tasks, memories, activity history, chat messages, and tool executions. | ✅ Complete |
-| **Live Hardware Monitor** | Background polling of CPU %, RAM %, GPU utilization %, VRAM allocation, and GPU temperature. | ✅ Complete |
 
 ---
 
