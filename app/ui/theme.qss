@@ -1,0 +1,313 @@
+/*
+ * Personal Agent - Dark Professional QSS Theme
+ * Inspired by VS Code, Antigravity, and modern developer workspaces.
+ */
+
+/* Global Window and Base Widget */
+QMainWindow, QDialog {
+    background-color: #131417;
+    color: #e2e4e9;
+    font-family: "Segoe UI", "Segoe UI Variable", -apple-system, Arial, sans-serif;
+    font-size: 13px;
+}
+
+QWidget#centralWidget, QWidget#mainContainer {
+    background-color: #131417;
+}
+
+/* Scrollbars */
+QScrollBar:vertical {
+    background-color: #131417;
+    width: 8px;
+    margin: 0px 0px 0px 0px;
+}
+QScrollBar::handle:vertical {
+    background-color: #282a30;
+    min-height: 24px;
+    border-radius: 4px;
+}
+QScrollBar::handle:vertical:hover {
+    background-color: #383a42;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+QScrollBar:horizontal {
+    background-color: #131417;
+    height: 8px;
+}
+QScrollBar::handle:horizontal {
+    background-color: #282a30;
+    min-width: 24px;
+    border-radius: 4px;
+}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0px;
+}
+
+/* Top Bar */
+#topBar {
+    background-color: #131417;
+    border-bottom: 1px solid #202227;
+    padding: 8px 16px;
+}
+
+#brandTitle {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+#topSearchBox {
+    background-color: #1c1d22;
+    border: 1px solid #282a30;
+    border-radius: 6px;
+    padding: 6px 14px;
+    color: #ffffff;
+    font-size: 12px;
+    min-width: 280px;
+}
+#topSearchBox:focus {
+    border: 1px solid #e59840;
+}
+
+#topStatusDot {
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+/* Sidebar */
+#sidebar {
+    background-color: #131417;
+    border-right: 1px solid #202227;
+    min-width: 190px;
+    max-width: 210px;
+}
+
+#sidebarList {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    padding: 8px 10px;
+}
+
+#sidebarList::item {
+    color: #9ca3af;
+    padding: 8px 12px;
+    margin: 2px 0px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+#sidebarList::item:hover {
+    background-color: #1c1d22;
+    color: #ffffff;
+}
+
+#sidebarList::item:selected {
+    background-color: #23252b;
+    color: #e59840;
+    font-weight: 600;
+}
+
+/* Right Agent Panel */
+#rightAgentPanel {
+    background-color: #131417;
+    border-left: 1px solid #202227;
+    min-width: 230px;
+    max-width: 260px;
+    padding: 14px;
+}
+
+.sectionHeader {
+    color: #9ca3af;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    margin-top: 14px;
+    margin-bottom: 6px;
+}
+
+.panelCard {
+    background-color: #1c1d22;
+    border: 1px solid #282a30;
+    border-radius: 6px;
+    padding: 10px 12px;
+}
+
+.panelCardTitle {
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.panelCardSubtitle {
+    color: #8e929b;
+    font-size: 12px;
+}
+
+.activityItem {
+    color: #8e929b;
+    font-size: 12px;
+    padding: 3px 0px;
+}
+
+/* Bottom Status Bar */
+#statusBar {
+    background-color: #101114;
+    border-top: 1px solid #1e2025;
+    color: #8e929b;
+    font-size: 11px;
+    padding: 3px 12px;
+}
+
+/* Workspace Pages Shared Styling */
+.pageTitle {
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.pageSubtitle {
+    color: #8e929b;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+.surfaceCard {
+    background-color: #1c1d22;
+    border: 1px solid #282a30;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.cardHeading {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.cardSubheading {
+    color: #8e929b;
+    font-size: 13px;
+}
+
+/* Quick Action Buttons */
+QPushButton.quickActionButton {
+    background-color: #1c1d22;
+    border: 1px solid #282a30;
+    border-radius: 6px;
+    color: #d1d5db;
+    padding: 14px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: left;
+}
+
+QPushButton.quickActionButton:hover {
+    background-color: #23252b;
+    border: 1px solid #383a42;
+    color: #ffffff;
+}
+
+QPushButton.quickActionButton:pressed {
+    background-color: #18191d;
+}
+
+/* Standard Buttons */
+QPushButton.primaryButton {
+    background-color: #e59840;
+    border: none;
+    border-radius: 6px;
+    color: #131417;
+    font-weight: 600;
+    padding: 8px 16px;
+}
+QPushButton.primaryButton:hover {
+    background-color: #f0a34b;
+}
+QPushButton.primaryButton:pressed {
+    background-color: #c98030;
+}
+
+QPushButton.secondaryButton {
+    background-color: #1c1d22;
+    border: 1px solid #282a30;
+    border-radius: 6px;
+    color: #e2e4e9;
+    padding: 7px 14px;
+}
+QPushButton.secondaryButton:hover {
+    background-color: #25272e;
+    border: 1px solid #383a42;
+}
+
+/* Input Fields */
+QLineEdit, QTextEdit, QPlainTextEdit {
+    background-color: #16171b;
+    border: 1px solid #282a30;
+    border-radius: 6px;
+    color: #ffffff;
+    padding: 8px 12px;
+    selection-background-color: #2e323b;
+}
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {
+    border: 1px solid #e59840;
+}
+
+/* Chat Input Bar */
+#chatInputContainer {
+    background-color: #18191d;
+    border: 1px solid #282a30;
+    border-radius: 8px;
+    padding: 6px 10px;
+}
+#chatInputField {
+    background-color: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 13px;
+}
+
+/* Tables and Trees */
+QTableWidget, QTreeWidget, QListView {
+    background-color: #16171b;
+    border: 1px solid #282a30;
+    border-radius: 6px;
+    color: #e2e4e9;
+    gridline-color: #23252b;
+    selection-background-color: #25272e;
+    selection-color: #ffffff;
+}
+QHeaderView::section {
+    background-color: #1c1d22;
+    color: #8e929b;
+    padding: 6px 8px;
+    border: none;
+    border-bottom: 1px solid #282a30;
+    font-weight: 600;
+    font-size: 11px;
+}
+
+/* Badges */
+QLabel.statusBadge {
+    background-color: #23252b;
+    color: #9ca3af;
+    border: 1px solid #2c2e36;
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 600;
+}
+QLabel.statusBadgeActive {
+    background-color: #2b261b;
+    color: #e59840;
+    border: 1px solid #4a381e;
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 600;
+}
