@@ -86,6 +86,20 @@ class DatabaseManager:
                 )
             """)
 
+            # Tool executions table (Phase 2.2.1)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS tool_executions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    conversation_id TEXT DEFAULT 'default',
+                    tool_name TEXT NOT NULL,
+                    arguments TEXT,
+                    result TEXT,
+                    status TEXT NOT NULL,
+                    duration_ms REAL DEFAULT 0.0,
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
             conn.commit()
 
             # Seed default tasks if empty
@@ -148,6 +162,38 @@ class DatabaseManager:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM messages WHERE conversation_id = ?", (conversation_id,))
             conn.commit()
+
+    def save_tool_execution(
+        self,
+        tool_name: str,
+        arguments: Any,
+        result: Any,
+        status: str,
+        duration_ms: float = 0.0,
+        conversation_id: str = "default"
+    ) -> int:
+        """Save a tool execution record for auditing and conversation history."""
+        import json
+        args_str = json.dumps(arguments) if not isinstance(arguments, str) else arguments
+        res_str = json.dumps(result) if not isinstance(result, str) else result
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO tool_executions (conversation_id, tool_name, arguments, result, status, duration_ms)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (conversation_id, tool_name, args_str, res_str, status, duration_ms))
+            conn.commit()
+            return cursor.lastrowid
+
+    def get_tool_executions(self, conversation_id: str = "default", limit: int = 50) -> List[Dict[str, Any]]:
+        """Retrieve recent tool executions."""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT * FROM tool_executions WHERE conversation_id = ? ORDER BY id DESC LIMIT ?",
+                (conversation_id, limit)
+            )
+            return [dict(row) for row in cursor.fetchall()]
 
 
 # Singleton instance
