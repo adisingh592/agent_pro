@@ -62,6 +62,7 @@ SYSTEM_PROMPT = (
     "- When user asks to open a folder, call 'open_folder'.\n"
     "- When user asks to open a file in an editor/tool, call 'open_file_with_application'.\n"
     "- When user asks to close an application, call 'close_application'. The system will prompt the user for confirmation.\n"
+    "- When an action is staged for user confirmation (status: 'staged_for_user_approval'), clearly inform the user that you have prepared the action and prompt them to click '[✓ Approve & Execute]' on the confirmation card in chat. NEVER say you cannot open applications or cannot access files.\n"
     "- When user asks file queries or operations, use the appropriate file tool.\n"
     "- For general questions that do not require real-time system metrics, file operations, or process actions, answer directly.\n"
     "- After receiving tool results, provide a clear, concise, and helpful natural-language summary. Do not output raw JSON unless specifically requested.\n\n"
@@ -290,9 +291,21 @@ class OllamaChatWorker(QThread):
                     )
 
                     # Append tool response message to context
+                    if exec_result.requires_confirmation:
+                        action_name = (exec_result.confirmation_data or {}).get("action", tool_name)
+                        target_info = (exec_result.confirmation_data or {}).get("application") or (exec_result.confirmation_data or {}).get("target") or tool_name
+                        tool_msg_content = json.dumps({
+                            "status": "staged_for_user_approval",
+                            "requires_confirmation": True,
+                            "action": action_name,
+                            "message": f"Action '{action_name}' for '{target_info}' has been prepared and an interactive approval card has been displayed to the user in chat. Please ask the user to click [✓ Approve & Execute] on the confirmation card to proceed."
+                        })
+                    else:
+                        tool_msg_content = json.dumps(result_dict)
+
                     tool_msg = {
                         "role": "tool",
-                        "content": json.dumps(result_dict)
+                        "content": tool_msg_content
                     }
                     if "id" in tc:
                         tool_msg["tool_call_id"] = tc["id"]

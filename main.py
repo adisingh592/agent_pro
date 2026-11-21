@@ -52,6 +52,8 @@ def main():
         # Launch Main Window
         window = MainWindow()
         window.show()
+        window.raise_()
+        window.activateWindow()
         logger.info("Personal Agent main window launched successfully.")
 
         sys.exit(app.exec())

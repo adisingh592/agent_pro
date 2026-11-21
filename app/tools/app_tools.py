@@ -237,16 +237,33 @@ def launch_application(
         if exe_path.lower().endswith(".lnk"):
             # Windows shortcut
             os.startfile(exe_path)
-            pid = 0  # os.startfile does not return PID directly
+            pid = 0
         else:
-            cmd = [exe_path] + arg_list
-            proc = subprocess.Popen(
-                cmd,
-                shell=False,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
-            pid = proc.pid
+            try:
+                if arg_list:
+                    proc = subprocess.Popen(
+                        [exe_path] + arg_list,
+                        shell=False,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL
+                    )
+                else:
+                    # Prefer os.startfile for Windows GUI desktop applications to ensure immediate foreground focus
+                    try:
+                        os.startfile(exe_path)
+                        proc = None
+                    except Exception:
+                        proc = subprocess.Popen(
+                            [exe_path],
+                            shell=False,
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL
+                        )
+                pid = proc.pid if proc else 0
+            except Exception as launch_err:
+                logger.warning("Launch with args failed (%s), falling back to startfile: %s", launch_err, exe_path)
+                os.startfile(exe_path)
+                pid = 0
 
         return {
             "success": True,

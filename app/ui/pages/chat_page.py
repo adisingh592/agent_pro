@@ -124,14 +124,27 @@ class ToolActivityWidget(QFrame):
         self.duration_label.setStyleSheet("color: #6b7280; font-size: 11px;")
         layout.addWidget(self.duration_label)
 
-    def set_completed(self, success: bool, duration_ms: float, error_msg: str = "") -> None:
+    def set_completed(self, success: bool, duration_ms: float, error_msg: str = "", requires_confirmation: bool = False) -> None:
         display_name = self.tool_name.replace("_", " ").title()
         self.duration_label.setText(f"{duration_ms:.1f} ms")
 
-        if success:
+        if requires_confirmation:
+            self.icon_label.setText("🛡️")
+            self.icon_label.setStyleSheet("color: #e59840; font-size: 13px; font-weight: bold;")
+            self.status_label.setText(f"Tool: {display_name} — Action staged (Awaiting your approval)")
+            self.status_label.setStyleSheet("color: #e59840; font-size: 12px; font-family: 'Consolas', monospace;")
+            self.setStyleSheet("""
+                ToolActivityWidget {
+                    background-color: #1f1d17;
+                    border: 1px solid #4a3318;
+                    border-left: 3px solid #e59840;
+                    border-radius: 6px;
+                }
+            """)
+        elif success:
             self.icon_label.setText("✓")
             self.icon_label.setStyleSheet("color: #10b981; font-size: 13px; font-weight: bold;")
-            self.status_label.setText(f"Tool: {display_name} — Retrieved successfully")
+            self.status_label.setText(f"Tool: {display_name} — Completed successfully")
             self.status_label.setStyleSheet("color: #d1d5db; font-size: 12px; font-family: 'Consolas', monospace;")
             self.setStyleSheet("""
                 ToolActivityWidget {
@@ -617,14 +630,15 @@ class ChatPage(QWidget):
     def _on_tool_finished(self, tool_name: str, result: dict, duration_ms: float, success: bool) -> None:
         display_name = tool_name.replace("_", " ").title()
         tool_widget = self._active_tool_widgets.get(tool_name)
+        requires_conf = bool(result.get("requires_confirmation"))
         if tool_widget:
             err = result.get("error", "Failed") if not success else ""
-            tool_widget.set_completed(success, duration_ms, err)
+            tool_widget.set_completed(success, duration_ms, err, requires_confirmation=requires_conf)
         
         if success:
             self.status_banner.setText(f"✓ {display_name} retrieved ({duration_ms:.1f}ms) • Analyzing...")
             self.status_banner.setStyleSheet("color: #10b981; font-size: 11px;")
-        elif result.get("requires_confirmation"):
+        elif requires_conf:
             self.status_banner.setText(f"🛡️ Action staged: Awaiting your approval for {display_name}")
             self.status_banner.setStyleSheet("color: #e59840; font-size: 11px;")
         else:
@@ -634,7 +648,7 @@ class ChatPage(QWidget):
         self._scroll_to_bottom()
 
     def _on_confirmation_requested(self, conf_data: dict) -> None:
-        """Display an interactive file approval card in the chat."""
+        """Display an interactive approval card in the chat."""
         card = ConfirmationCardWidget(conf_data)
         card.confirmed.connect(self._on_card_confirmed)
         card.rejected.connect(self._on_card_rejected)
@@ -649,8 +663,25 @@ class ChatPage(QWidget):
         res = self.agent_core.execute_confirmed_tool(tool_name, args)
         if sender_card and hasattr(sender_card, "set_result"):
             is_success = res.get("success", True)
-            status_text = res.get("result", {}).get("status", "Operation completed and verified.") if is_success else res.get("error", "Execution failed")
+            status_text = res.get("result", {}).get("message", "Operation completed and verified.") if is_success else res.get("error", "Execution failed")
             sender_card.set_result(is_success, status_text)
+
+        # Append affirmative message in chat so user gets immediate visual confirmation
+        if res.get("success"):
+            app_name = res.get("result", {}).get("application", "")
+            if app_name:
+                self._append_message_widget("Agent", f"✓ **{app_name}** has been launched successfully.")
+            elif tool_name == "open_folder":
+                self._append_message_widget("Agent", "✓ Folder has been opened in File Explorer.")
+            elif tool_name == "open_file_with_application":
+                self._append_message_widget("Agent", "✓ File has been opened successfully.")
+            elif tool_name == "close_application":
+                self._append_message_widget("Agent", f"✓ Application **{app_name}** has been closed gracefully.")
+            else:
+                self._append_message_widget("Agent", f"✓ Operation '{tool_name.replace('_', ' ').title()}' completed and verified.")
+        else:
+            self._append_message_widget("Agent", f"✗ Execution failed: {res.get('error', 'Unknown error')}")
+
         self._scroll_to_bottom()
 
     def _on_card_rejected(self, conf_data: dict) -> None:
