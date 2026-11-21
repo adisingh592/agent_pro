@@ -6,9 +6,10 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 
 ---
 
-## 📌 Project Status: Phase 2.2.3 (Complete & Verified)
+## 📌 Project Status: Milestone A Complete (Autonomous Computer Control Engine)
 
-> **Current Milestone**: Phase 2.2.3 — Application & Process Control  
+> **Current Milestone**: Milestone A — Reference Repository Analysis & Computer Automation Architecture (Complete)  
+> **Prior Completed Phases**: Phase 1 (UI Foundation), Phase 2.1 (Local AI & GPU), Phase 2.2.1 (Tool Engine), Phase 2.2.2 (File Operations), Phase 2.2.3 (App & Process Control)  
 > **Target Hardware**: NVIDIA GeForce RTX 3050 Laptop GPU (6GB VRAM) / Intel Core i7-13650HX / 32GB RAM / Windows 11  
 > **Model**: `qwen3:8b` (5.2 GB GGUF, Q4_K_M) via Ollama (`llamacpp` CUDA v12 runner)  
 > **Repository**: [https://github.com/adisingh592/agent_pro.git](https://github.com/adisingh592/agent_pro.git)  
@@ -18,7 +19,11 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 ## 📑 Table of Contents
 
 1. [Project Completion & Progress Tracker](#-project-completion--progress-tracker)
-2. [Features Overview](#-features-overview)
+2. [Autonomous Computer Automation Engine (Milestones A—I)](#-autonomous-computer-automation-engine-milestones-a-i)
+   - [Reference Repository Analysis](#1-reference-repository-analysis)
+   - [Unified 5-Level Hybrid Architecture](#2-unified-5-level-hybrid-architecture)
+   - [4-Tier Safety & Control Model](#3-4-tier-safety--control-model)
+   - [Autonomous ReAct Task Execution & Skill Replay](#4-autonomous-react-task-execution--skill-replay)
 3. [Phase 2.2.3 — Application & Process Control](#-phase-223--application--process-control)
    - [Application Discovery & Registry Cache](#1-application-discovery--registry-cache)
    - [Natural Language Application Name Resolution](#2-natural-language-application-name-resolution)
@@ -54,18 +59,56 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 | **Phase 2.2.1: Agent Tool Engine** | 5-stage tool execution pipeline, JSON Schema validation, permissions policy, multi-round tool loop, chat tool badges, 3 built-in safe tools. | ✅ Complete | **100%** |
 | **Phase 2.2.2: File Operations** | File search, list, metadata, text reading, recent/large files, verified copy/move/rename/mkdir, interactive confirmation UI, smart organization. | ✅ Complete | **100%** |
 | **Phase 2.2.3: App & Process Control** | Multi-source app discovery, natural language resolver, safe process inspection, controlled launch, graceful close, critical process guard. | ✅ Complete | **100%** |
-| **Phase 3: Coding IDE & Automation** | Code editor with syntax highlighting, project tree, terminal integration, visual workflow node execution. | ⏳ Pending | **0%** |
-| **Phase 4: Multimodal & Voice** | Offline local Whisper speech-to-text, Piper TTS voice feedback, autonomous multi-step desktop workflows. | ⏳ Pending | **0%** |
+| **Milestone A: Architecture & Safety** | Reference analysis of WindowsAgent, UI-TARS, AutoGUI; 5-level hybrid architecture; 4-tier safety model; ReAct execution specs. | ✅ Complete | **100%** |
+| **Milestone B: Windows UI Automation** | Accessibility tree inspection, UI element detection, native control pattern invocation without relying on screen coordinates. | ⏳ Staged (Next) | **0%** |
+| **Milestone C: Desktop Actions & Grounding** | Coordinate normalization [0, 1000], DPI scaling, mouse/keyboard primitives with PyAutoGUI failsafes and window boundaries. | ⏳ Staged | **0%** |
+| **Milestone D: Browser Automation Backend** | Playwright / Chrome DevTools Protocol integration, semantic DOM locators, network idle detection, form automation. | ⏳ Staged | **0%** |
+| **Milestone E: Visual & OCR Fallback Engine** | Configurable lightweight/remote VLM interface, Windows Media OCR / Tesseract fallback for canvas/Direct3D applications. | ⏳ Staged | **0%** |
+| **Milestone F: Autonomous Task Execution Engine**| Closed-loop Observe-Ground-Act-Verify ReAct loop, dynamic TaskPlanner, deterministic state assertions, stall detection. | ⏳ Staged | **0%** |
+| **Milestone G: Safety, Scoping & Human Oversight**| 4-tier security enforcer, application scoping, dry-run simulation mode, emergency abort (Ctrl+Alt+X), SQLite action audit logging.| ⏳ Staged | **0%** |
+| **Milestone H: Skill Memory & Trajectory Replay**| Parameterized skill storage, SQLite `skills` schema, fast-path zero-LLM replay, drift detection and self-repair. | ⏳ Staged | **0%** |
+| **Milestone I: Desktop UI Integration & E2E Tests**| Live execution cards, step-by-step progress drawer, abort button, interactive approval cards, comprehensive test suite. | ⏳ Staged | **0%** |
 
 ```
-[Phase 1]     ████████████████████ 100% Complete
-[Phase 2.1]   ████████████████████ 100% Complete
-[Phase 2.2.1] ████████████████████ 100% Complete
-[Phase 2.2.2] ████████████████████ 100% Complete
-[Phase 2.2.3] ████████████████████ 100% Complete
-[Phase 3]     ░░░░░░░░░░░░░░░░░░░░   0% Staged (Next)
-[Phase 4]     ░░░░░░░░░░░░░░░░░░░░   0% Staged
+[Phase 1]       ████████████████████ 100% Complete
+[Phase 2.1]     ████████████████████ 100% Complete
+[Phase 2.2.1]   ████████████████████ 100% Complete
+[Phase 2.2.2]   ████████████████████ 100% Complete
+[Phase 2.2.3]   ████████████████████ 100% Complete
+[Milestone A]   ████████████████████ 100% Complete (Architectural Specification Ready)
+[Milestones B-I]░░░░░░░░░░░░░░░░░░░░   0% Staged (Awaiting User Review & Approval)
 ```
+
+---
+
+## 🤖 Autonomous Computer Automation Engine (Milestones A—I)
+
+Personal Agent is evolving from an intelligent conversational agent with file and process capabilities into a **unified autonomous computer-use agent**, synthesizing key architectural paradigms from three state-of-the-art open-source projects:
+
+1. **[WindowsAgent](https://github.com/ibraheem-mustafa-dev/windowsagent)**: Windows UI Automation tree inspection, accessibility patterns, window discovery, and deterministic UI grounding.
+2. **[UI-TARS Desktop](https://github.com/bytedance/UI-TARS-desktop)**: Visual computer control, normalized `[0, 1000]` coordinates, multimodal visual grounding fallback, and cross-platform operator abstractions.
+3. **[AutoGUI](https://github.com/BillJr99/AutoGUI)**: Observe-Ground-Act-Verify ReAct loop, 4-tier safety model, action scoping, dry-run simulation mode, persistent skill memory, and trajectory replay.
+
+### Architectural Deliverables & Specifications
+
+The engineering blueprints for this evolutionary milestone have been formalized into dedicated specifications:
+
+| Specification Document | Focus Area & Key Technical Invariants |
+| :--- | :--- |
+| **[docs/REFERENCE_REPOSITORY_ANALYSIS.md](file:///h:/pro%20agent/docs/REFERENCE_REPOSITORY_ANALYSIS.md)** | Comparative analysis across 12 architectural dimensions, 5-level interaction priority matrix, VRAM/RAM hardware budget for RTX 3050 6GB, and licensing compliance. |
+| **[docs/COMPUTER_AUTOMATION_ARCHITECTURE.md](file:///h:/pro%20agent/docs/COMPUTER_AUTOMATION_ARCHITECTURE.md)** | End-to-end subsystem layout, `app/automation/` modular package hierarchy, data models (`DesktopObservation`, `ActionCommand`, `TaskPlan`), and system integration. |
+| **[docs/SAFETY_MODEL.md](file:///h:/pro%20agent/docs/SAFETY_MODEL.md)** | 4-tier security classification (`READ_ONLY`, `CONTROLLED`, `APPROVAL_REQUIRED`, `RESTRICTED`), window & path scoping, dry-run simulation, emergency abort (`Ctrl+Alt+X`, corner slam), and SQLite audit logging. |
+| **[docs/AUTONOMOUS_TASK_EXECUTION.md](file:///h:/pro%20agent/docs/AUTONOMOUS_TASK_EXECUTION.md)** | Observe-Ground-Act-Verify (OGAV) ReAct loop, dynamic `TaskPlanner`, deterministic state assertions, loop bounds (max 25 steps, 10s action timeout, stall guard), and parameterized skill replay memory. |
+
+### 5-Level Hybrid Interaction Priority Matrix
+
+To maximize reliability and performance on our target hardware without exhausting VRAM, Personal Agent dispatches operations through a hierarchical priority cascade:
+
+1. **Level 1: System & Application APIs (Fastest & 100% Deterministic — 0 VRAM)**: Built-in `file_tools`, `app_tools`, `process_manager`, Win32 API.
+2. **Level 2: Windows UI Automation Tree (Accessibility-First — 0 VRAM)**: Native UI Automation pattern invocation (`InvokePattern`, `ValuePattern`), resilient against DPI, layout, and window coordinate changes.
+3. **Level 3: Structured Browser DOM (Playwright & CDP — 0 VRAM)**: Semantic CSS/XPath locators, DOM element grounding, and network idle verification for web applications.
+4. **Level 4: Multimodal Visual Grounding (Complementary Fallback — Configurable Endpoint)**: Screenshot-based bounding box and coordinate prediction for custom-rendered canvas or Direct3D applications.
+5. **Level 5: Local OCR Fallback (Text Bounding Box Centroids — CPU / Zero VRAM)**: Windows Media OCR or Tesseract text box centroid targeting when UI elements lack accessibility descriptors.
 
 ---
 
