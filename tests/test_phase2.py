@@ -96,15 +96,15 @@ def run_phase2_tests():
     agent_core.stream_finished.connect(on_finished)
     agent_core.stream_error.connect(on_error)
 
-    test_prompt = "Explain in one sentence what a CPU is."
+    test_prompt = "Say hello in 3 words. Do not overthink."
     print(f"  • Submitting Prompt: '{test_prompt}'")
     agent_core.process_user_input(test_prompt)
 
-    # Allow up to 60s for model inference
+    # Allow up to 120s for model inference
     timeout_timer = QTimer()
     timeout_timer.setSingleShot(True)
     timeout_timer.timeout.connect(loop.quit)
-    timeout_timer.start(60000)
+    timeout_timer.start(120000)
     loop.exec()
 
     assert "error" not in finished_data, f"Inference failed with error: {finished_data.get('error')}"

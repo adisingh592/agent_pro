@@ -1,147 +1,93 @@
 # Personal Agent — Desktop AI Assistant
 
-A high-performance personal desktop AI assistant built with **Python 3.12+**, **PySide6**, and an **SQLite-ready modular architecture**.
+A high-performance personal desktop AI assistant built with **Python 3.12+**, **PySide6**, and an **SQLite-ready modular architecture**, powered by **local Ollama LLMs with NVIDIA GPU hardware acceleration**.
 
 Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agent provides a centralized, professional command center designed for speed, visual clarity, and future autonomous system capabilities.
 
 ---
 
-## 📌 Project Status: Phase 1 (100% Complete & Verified)
+## 📌 Project Status: Phase 2.1 (Complete & Verified)
 
-> **Current Milestone**: Phase 1 Foundation  
-> **Status**: Completed, tested, and visually verified against UI reference designs.
-
----
-
-## 📋 What Has Been Done Till Now (Phase 1 Summary)
-
-### 1. Technology Stack & Foundation
-- [x] **Python 3.12+ (Python 3.13 verified)**: Modern typing, clean modular structure.
-- [x] **PySide6 (Qt for Python 6.12.0)**: Native, hardware-accelerated desktop UI (no Electron overhead).
-- [x] **SQLite Database Layer**: Auto-initializing schema in `data/agent_database.sqlite` with seed datasets for tasks, chat history, memory facts, and activity logs.
-- [x] **Custom QSS Styling (`app/ui/theme.qss`)**:
-  - Dark charcoal background (`#131417`)
-  - Elevated neutral gray surfaces (`#1c1d22`, `#23252b`)
-  - Subtle borders (`#282a30`)
-  - Crisp high-contrast white text (`#ffffff`) and muted gray labels (`#8e929b`)
-  - Restrained warm amber/orange accent (`#e59840`)
-- [x] **Standard Python Logging**: Dual output to stdout and rotating persistent log file (`logs/personal_agent.log`).
-- [x] **psutil System Monitoring**: Live CPU and RAM usage tracking.
+> **Current Milestone**: Phase 2.1 — Local AI Integration, Ollama & NVIDIA GPU Acceleration  
+> **Hardware Target**: NVIDIA GeForce RTX 3050 Laptop GPU (6GB VRAM) / Intel Core i7-13650HX / 32GB RAM  
+> **Status**: Successfully integrated with existing local Ollama installation, verified GPU offloading with `qwen3:8b`, and enabled non-blocking token streaming.
 
 ---
 
-### 2. Persistent Window Layout (Three-Part Framework)
+## 🚀 Phase 2.1 — Local AI Integration & NVIDIA GPU Acceleration
 
-The application implements the layout shown in the project reference images:
-
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│ PERSONAL AGENT          🔍 Search tasks, files, or commands              ● Agent ready │ (Top Header)
-├──────────────┬──────────────────────────────────────────────────────────┬──────────────┤
-│ Home         │                                                          │ AGENT STATUS │
-│ Agent Chat   │                                                          │  ● Ready     │
-│ Tasks        │                                                          ├──────────────┤
-│ Files        │                                                          │ CURRENT TASK │
-│ Browser      │                  MAIN WORKSPACE                          │  Waiting...  │
-│ Coding       │              (11 Modular Page Views)                     ├──────────────┤
-│ Workflows    │                                                          │ EXEC. STATE  │
-│ Voice        │                                                          │  State: Idle │
-│ Memory       │                                                          ├──────────────┤
-│ History      │                                                          │ MODEL CONN.  │
-│ Settings     │                                                          │  Local Qwen  │
-│              │                                                          ├──────────────┤
-│              │                                                          │ RECENT ACT.  │
-│              │                                                          │  • Init...   │
-├──────────────┴──────────────────────────────────────────────────────────┴──────────────┤
-│ ● Agent Ready        Local model: not connected          CPU: 2.1% | RAM: 14.8% | Active│ (Status Bar)
-└────────────────────────────────────────────────────────────────────────────────────────┘
-```
-
-- **Top Header Bar**:
-  - Left: Brand title `PERSONAL AGENT` in bold uppercase
-  - Center: Global search box (`🔍 Search tasks, files, or commands`) connected to input dispatcher
-  - Right: Agent readiness status indicator (`● Agent ready`)
-- **Left Sidebar**:
-  - 11 navigation destinations with dark card pill backgrounds and warm amber active text.
-  - Zero crashes when navigating between views.
-- **Center Workspace**:
-  - Dynamic `QStackedWidget` hosting all 11 workspace views with smooth transitions.
-- **Right Agent Panel (Persistent)**:
-  - **AGENT STATUS**: Live status indicator (`● Ready` / `Working`)
-  - **CURRENT TASK**: Real-time task title and detail
-  - **EXECUTION STATE**: Current state (`Idle`, `Executing`, `Waiting`) with progress bar
-  - **MODEL CONNECTION**: Provider and model status (`Local (Ollama): Qwen 2.5 7B`)
-  - **RECENT ACTIVITY**: Live bullet log of recent application and agent events
-- **Bottom Status Bar**:
-  - Agent status dot
-  - Active model status (`Local model: not connected`)
-  - Real-time CPU and RAM resource metrics updated on a live timer
+### 1. Ollama Integration & Model Discovery
+- **Local API Integration**: Directly connects to the local Ollama service at `http://localhost:11434` via native HTTP APIs (`/api/tags`, `/api/chat`, `/api/ps`).
+- **Existing Model Detection**: Automatically queries installed models without re-downloading or reinstalling. Detects and auto-selects the installed model:
+  ```text
+  qwen3:8b (Size: 5.2 GB on disk, 5.7 - 6.0 GB in memory)
+  ```
+- **Model Switching**: Dynamic model selector dropdown in the Chat page and Settings with instant refresh (↻).
 
 ---
 
-### 3. Detailed Page Implementations
+### 2. GPU Acceleration Diagnosis & Resolution
 
-| # | Page | Implemented Capabilities & UI Components | Status |
-|---|------|------------------------------------------|--------|
-| **1** | **Home** | • Welcome header and workspace subtitle<br>• Command prompt card (*"What would you like me to do?"*) with Enter-key submission<br>• 4 Quick Actions (*Automate task*, *Open application*, *Manage files*, *Start coding*) with direct page routing<br>• Active Tasks overview card dynamically tied to agent execution | ✅ Complete & Interactive |
-| **2** | **Agent Chat** | • Natural language conversation UI<br>• Styled message bubbles: amber `"You"` label & card-based `"Agent"` bubble<br>• Pre-seeded dialogue matching `02_agent_chat.png`<br>• Interactive text input with Enter key & Send button (➤)<br>• Attachment (📎) and Mic (🎤) button placeholders<br>• AI Model selector dropdown<br>• Contextual simulated AI responses + auto-scroll | ✅ Complete & Interactive |
-| **3** | **Tasks** | • Metric counter card (*Running 0, Waiting 3, Scheduled 0, Completed 0*) bound to database<br>• SQLite-persisted task queue table matching `03_task_manager.png`<br>• Task rows with name, status badge, progress bar, and start time<br>• Interactive **Details** modal and **Stop** button<br>• **＋ Add Task** creation dialog with category selection | ✅ Complete & Interactive |
-| **4** | **Files** | • Safe, read-only Windows drive selector (`C:\`, `D:\`, `H:\`)<br>• Directory traversal with Up (↑), Refresh (↻), and breadcrumb path edit<br>• Live file table with Name, Type, Size, and Date Modified<br>• Double-click folder navigation<br>• Real-time filename search filter | ✅ Complete & Functional |
-| **5** | **Browser** | • Browser navigation bar with Back (◀), Forward (▶), Reload (↻), and URL input<br>• Agent Browser Controls toolbar (*Take Screenshot*, *Extract Text*, *Inspect Elements*, *Agent Autopilot*)<br>• Dark viewport canvas with session state indicators<br>• Staged for Playwright/CDP automation in Phase 2 | ✅ Complete (UI Pre-wired) |
-| **6** | **Coding Workspace** | • VS Code-inspired layout matching `04_coding_workspace.png`<br>• Project Explorer tree (`src/`, `main.py`, `agent.py`, `tools/`, `tests/`, `README.md`)<br>• Code editor preview with `main.py` tab and monospace styling<br>• Bottom Terminal panel with simulated prompt (`> python main.py`) and amber output (`Personal Agent ready`) | ✅ Complete (IDE Staged) |
-| **7** | **Workflows** | • Automation Builder matching `05_workflow_builder.png`<br>• Interactive custom canvas rendering connected nodes with warm amber connecting lines:<br>&nbsp;&nbsp;`[ Trigger ] ──── [ Wait for download ] ──── [ Move files ] ──── [ Verify ]`<br>• Toolbar buttons (*＋ Add Trigger*, *＋ Add Action*, *＋ Add Condition*, *💾 Save Workflow*, *▶ Run Workflow*) | ✅ Complete & Interactive |
-| **8** | **Voice Assistant** | • Microphone status indicator (*Microphone: Standby / Active*)<br>• Visual audio waveform visualizer widget<br>• Push-to-talk toggle (*🎙 Start Listening* / *⏹ Stop Listening*)<br>• Audio device dropdown and speech engine selector (Whisper Local / Cloud) | ✅ Complete (UI Staged) |
-| **9** | **Memory** | • Categorized knowledge base (*Personal preferences*, *Projects*, *Work*, *Applications*, *Frequently used folders*, *Automation preferences*)<br>• Real-time search filter across title and body content<br>• SQLite persistence with live refresh<br>• **＋ Add Memory** dialog to save persistent memory facts | ✅ Complete & Interactive |
-| **10** | **History** | • Activity timeline tracking tasks, chat queries, file indexing, and automation events<br>• Category dropdown filter (*All*, *Tasks*, *Chat*, *File Operations*, *Automation*)<br>• Text search box and *Clear History* button | ✅ Complete & Interactive |
-| **11** | **Settings** | • 8 tabbed configuration sections: *General*, *Appearance*, *AI Models*, *Local Models*, *API Providers*, *Voice*, *Automation*, *Permissions*<br>• Interactive controls: checkboxes, model dropdowns, password inputs (API keys), sliders, and *Save Changes* confirmation | ✅ Complete & Interactive |
+#### Hardware Environment
+- **GPU**: NVIDIA GeForce RTX 3050 6GB Laptop GPU
+- **VRAM Total**: 6,144 MiB (~6.0 GB)
+- **Driver**: 617.42 | **CUDA UMD**: 13.4
+- **Host System RAM**: 32 GB | **CPU**: Intel Core i7-13650HX
 
----
+#### Diagnosis of Previous CPU-Only Execution
+1. **Windows Desktop VRAM Overhead**: In normal Windows operation, desktop compositor and active desktop applications (Edge, Windows Terminal, IDEs) consume ~1.2 GB of VRAM.
+2. **Context Window Sizing**: The default context window for Qwen 3 (up to 32,768 tokens) allocates significant KV cache memory in VRAM. When context window was unconstrained, the total memory required exceeded available VRAM (4.9 GB free), triggering Ollama to fail GPU allocation and fall back to 100% CPU.
+3. **The Solution**:
+   - Explicitly configured `num_ctx: 4096` as the optimal default context size (with a 2048 low-VRAM option).
+   - Configured `num_gpu: -1` to force Ollama to maximize GPU layer offloading.
+   - At `num_ctx: 4096`: Ollama successfully offloads **70% of layers to the RTX 3050 GPU** and 30% to high-speed system RAM.
+   - At `num_ctx: 2048`: Ollama offloads **75% of layers to the GPU**.
 
-### 4. Functional vs. Staged Separation (Phase 1 vs. Future Phases)
-
-To ensure technical transparency, here is the exact operational status of each capability:
-
-| Capability | Phase 1 Status | Future Target |
-|---|---|---|
-| **GUI Navigation & Layout** | **Fully Functional**: Seamless navigation across all 11 pages, responsive resizing, high-DPI scaling. | Continuous refinement |
-| **Chat Interaction** | **Fully Functional**: User messages render, trigger AgentCore processing, log to the right panel, and generate contextual responses. | Streaming AI API integration (Ollama / Gemini / Anthropic) |
-| **Task Queue & DB** | **Fully Functional**: SQLite-backed CRUD, task counts, queue display, add/stop tasks. | Background task execution workers & Celery/Queue runner |
-| **File Browser** | **Fully Functional**: Real directory indexing, drive selection, path navigation, file filtering (Safe read-only). | File move/copy/rename, automated downloads sorter |
-| **Workflow Canvas** | **Fully Functional**: Custom QPainter canvas rendering connected blocks with amber wires. | Drag-and-drop node graph with live automation engine |
-| **Browser Engine** | **UI Layout Complete**: Address bar, controls, and viewport placeholder ready. | Playwright / Chromium headless browser integration |
-| **Coding Editor** | **UI Layout Complete**: Tree explorer, editor pane, and terminal ready. | Monaco Editor / QScintilla with syntax highlighting and live terminal |
-| **Voice Assistant** | **UI Layout Complete**: Push-to-talk state toggle, settings, visualizer ready. | Whisper speech-to-text & Piper/Edge-TTS voice synthesis |
-| **Personal Memory** | **Fully Functional**: SQLite memory items categorized, searched, and added dynamically. | Vector embeddings & RAG retrieval |
+#### Verified GPU Offload Metrics (`ollama ps` & `nvidia-smi`)
+- **Active Processor**: `30%/70% CPU/GPU` (llamacpp runner)
+- **VRAM Allocated**: **5,385 MiB / 6,144 MiB**
+- **Inference Speed**: **18.3 - 20.4 tokens/second**
+- **GPU Temperature**: 52°C - 56°C under load
 
 ---
 
-## 🧪 Testing & Verification Results
-
-An automated end-to-end verification suite was built and executed in `tests/test_app.py`:
-
-```
-==========================================
- ALL PHASE 1 VERIFICATION TESTS PASSED! 
-==========================================
-[1/6] Initializing QApplication...                 --> PASSED
-[2/6] Instantiating MainWindow...                  --> PASSED
-[3/6] Verifying all 11 pages navigate correctly...  --> PASSED (11/11 views)
-[4/6] Testing Chat interaction & AgentCore...      --> PASSED (User + Agent signals)
-[5/6] Testing SQLite Persistence (Tasks & Memory)...--> PASSED (CRUD + Query)
-[6/6] Testing Window Resizing (1024x768 to 1080p)..--> PASSED (No layout breakage)
-```
-
-### Visual Verification
-Test screenshots rendered during test execution are saved in `tests/screenshots/` and match the reference images:
-- `tests/screenshots/test_home.png` matches `ui images/01_home_dashboard.png`
-- `tests/screenshots/test_agent_chat.png` matches `ui images/02_agent_chat.png`
-- `tests/screenshots/test_tasks.png` matches `ui images/03_task_manager.png`
-- `tests/screenshots/test_coding_workspace.png` matches `ui images/04_coding_workspace.png`
-- `tests/screenshots/test_workflows.png` matches `ui images/05_workflow_builder.png`
+### 3. Non-Blocking Real-Time Chat Streaming
+- **UI Responsiveness (QThread Worker)**: All Ollama HTTP communications execute inside `OllamaChatWorker` on a dedicated background thread. The PySide6 UI event loop never locks, stutters, or freezes during inference.
+- **Progressive Streaming**: Tokens appear incrementally in the UI as generated.
+- **Reasoning & Content Support**: Supports both Qwen 3 thinking mode (`thinking` token chunks wrapped in `<think>...</think>`) and direct text generation.
+- **Stop Generation**: The chat Send button transforms into an active Stop button (⏹) during generation, cleanly aborting the stream via socket closure without hanging.
+- **Clear Conversation**: Allows clearing in-memory context and SQLite history with a single click.
 
 ---
 
-## 🛠️ Project File Structure
+### 4. Persistent Chat History & SQLite Storage
+- Chat messages persist across application restarts in `data/agent_database.sqlite`.
+- Message schema tracks `id`, `sender` ("You" / "Agent"), `role` ("user" / "assistant"), `content`, `model` (`qwen3:8b`), `conversation_id`, and `timestamp`.
+- Past messages automatically hydrate into multi-turn conversation memory on application launch.
+
+---
+
+### 5. System Prompt & Agent Persona
+Personal Agent is configured with a system prompt that:
+- Acts as a concise, practical local desktop AI assistant.
+- Assists with computer tasks, coding analysis, file organization, and workflow structure.
+- Asks clarifying questions when user instructions are ambiguous.
+- Clearly distinguishes between planning a task and executing a task.
+- Strictly refrains from falsely claiming to have executed actions, changed files, or launched external software before those capabilities are active in later phases.
+
+---
+
+### 6. Live GPU & System Resource Monitoring
+- `SystemMonitor` queries CPU and RAM via `psutil`, and NVIDIA GPU utilization, VRAM usage, and temperature via `nvidia-smi` queries.
+- Bottom Status Bar displays live metrics:
+  ```text
+  CPU: 14.5% | RAM: 73.2% | GPU: 12% (5.4/6.0 GB) | Phase 2.1
+  ```
+- Gracefully handles environments without NVIDIA GPUs without crashing.
+
+---
+
+## 🛠️ Project Structure
 
 ```
 PersonalAgent/
@@ -151,23 +97,22 @@ PersonalAgent/
 │
 ├── app/
 │   ├── ui/
-│   │   ├── main_window.py       # Assembles Top Bar, Sidebar, Workspace, Agent Panel, Status Bar
-│   │   ├── sidebar.py           # Left navigation bar with amber pill selection
+│   │   ├── main_window.py       # Three-part window layout, status bar, and model listeners
+│   │   ├── sidebar.py           # Left sidebar navigation with amber pill accent
 │   │   ├── theme.qss            # Custom dark charcoal QSS stylesheet
 │   │   │
 │   │   ├── pages/               # 11 Modular workspace views
-│   │   │   ├── __init__.py
-│   │   │   ├── home_page.py
-│   │   │   ├── chat_page.py
-│   │   │   ├── tasks_page.py
-│   │   │   ├── files_page.py
-│   │   │   ├── browser_page.py
-│   │   │   ├── coding_page.py
-│   │   │   ├── workflows_page.py
-│   │   │   ├── voice_page.py
-│   │   │   ├── memory_page.py
-│   │   │   ├── history_page.py
-│   │   │   └── settings_page.py
+│   │   │   ├── home_page.py     # Command input, quick actions, active tasks
+│   │   │   ├── chat_page.py     # Streaming chat UI, model selector, stop & clear buttons
+│   │   │   ├── tasks_page.py    # Metric counters, task queue, and creation dialog
+│   │   │   ├── files_page.py    # Local file manager with Windows drive selector
+│   │   │   ├── browser_page.py  # AI browser layout with controls & viewport
+│   │   │   ├── coding_page.py   # VS Code-style IDE with Explorer, Editor, and Terminal
+│   │   │   ├── workflows_page.py# Automation Builder with custom node canvas
+│   │   │   ├── voice_page.py    # Voice assistant with visualizer and push-to-talk
+│   │   │   ├── memory_page.py   # SQLite-backed persistent memory store
+│   │   │   ├── history_page.py  # Activity history timeline with category filters
+│   │   │   └── settings_page.py # Settings with Ollama test & GPU hardware status
 │   │   │
 │   │   └── panels/
 │   │       ├── __init__.py
@@ -175,26 +120,23 @@ PersonalAgent/
 │   │
 │   ├── core/
 │   │   ├── __init__.py
-│   │   ├── agent.py             # Agent state coordinator & response dispatcher
-│   │   ├── model_manager.py     # Model provider registry (Local & Cloud)
+│   │   ├── agent.py             # AgentCore & OllamaChatWorker (non-blocking streaming)
+│   │   ├── model_manager.py     # ModelManager (Ollama API, model discovery, GPU query)
 │   │   ├── task_manager.py      # SQLite task queue manager
-│   │   └── system_monitor.py    # psutil CPU/RAM resource monitor
+│   │   └── system_monitor.py    # CPU, RAM, and NVIDIA GPU metrics monitor
 │   │
-│   ├── tools/                   # Staged for Phase 2 tool execution
-│   │   └── __init__.py
-│   ├── automation/              # Staged for Phase 2 task automation
-│   │   └── __init__.py
+│   ├── tools/                   # Staged for Phase 2.2 tool execution
+│   ├── automation/              # Staged for workflow automation
 │   ├── memory/
-│   │   ├── __init__.py
 │   │   └── memory_store.py      # SQLite memory querying and categorization
 │   └── database/
-│       ├── __init__.py
-│       └── db.py                # SQLite schema and default data seed
+│       └── db.py                # SQLite schema with persistent messages & tasks
 │
 ├── data/                        # Persistent SQLite database (`agent_database.sqlite`)
 ├── logs/                        # Standard logging output (`personal_agent.log`)
 ├── tests/                       # Automated UI verification suite
-│   ├── test_app.py
+│   ├── test_app.py              # Phase 1 UI, navigation, and resize verification
+│   ├── test_phase2.py           # Phase 2.1 Ollama, streaming, GPU benchmark suite
 │   └── screenshots/             # Rendered test screenshots matching UI reference
 ├── ui images/                   # Provided UI reference screenshots
 └── README.md                    # Project documentation & progress report
@@ -202,35 +144,58 @@ PersonalAgent/
 
 ---
 
-## 🚀 How to Run the Application
+## 🧪 Verification & Benchmark Tests
 
-### 1. Ensure Dependencies Are Installed
+All automated tests have been verified:
+
+### Run Phase 2.1 Verification Suite
 ```bash
-pip install -r requirements.txt
+python tests/test_phase2.py
 ```
 
-### 2. Run Application
+**Benchmark Results**:
+```text
+========================================================
+ ALL PHASE 2.1 VERIFICATION & GPU TESTS PASSED (5/5)!   
+========================================================
+[Step 1/5] Testing ModelManager & Ollama Connectivity...  --> PASSED (qwen3:8b detected)
+[Step 2/5] Testing NVIDIA GPU Detection & Hardware...    --> PASSED (RTX 3050 6GB, 5.4GB VRAM)
+[Step 3/5] Testing Real Streaming Inference...           --> PASSED (18.3 - 20.4 tokens/s)
+[Step 4/5] Checking Ollama Processor Offloading...       --> PASSED (70% GPU offload, llamacpp)
+[Step 5/5] Testing SQLite Chat History & Stop Mechanism...--> PASSED (Saved & Stopped cleanly)
+```
+
+### Run Phase 1 Compatibility Suite
+```bash
+python tests/test_app.py
+```
+*(Verifies that all 11 pages navigate without errors, window resizing works, and visual themes remain intact).*
+
+---
+
+## 🚀 How to Run
+
+### 1. Ensure Ollama Is Running
+```bash
+ollama serve
+```
+
+### 2. Run Personal Agent
 ```bash
 python main.py
 ```
 
-### 3. Run Automated Tests
-```bash
-python tests/test_app.py
-```
-
 ---
 
-## 🔮 Future Roadmap (Beyond Phase 1)
+## 🔮 Roadmap Ahead
 
-- **Phase 2: Local AI & Tool Execution**
-  - Connect Ollama and LM Studio via local streaming APIs.
-  - Integrate Playwright for automated browser navigation and form interaction.
-  - Implement real file management operations (safe copies, downloads organizer, checksum validation).
+- **Phase 2.2: Tool Execution & Computer Control**
+  - Tool calling protocol with Qwen 3 function calling format.
+  - Safe file tools: file search, folder organization, automated download manager.
+  - Safe command execution in sandbox mode.
 - **Phase 3: Coding IDE & Automation Engine**
-  - Integrate Monaco Editor / QScintilla for full syntax highlighting and code auto-complete.
-  - Execute automated multi-step workflows created in the Automation Builder.
-  - Embed local interactive terminal shell (PowerShell / WSL).
+  - Monaco Editor / QScintilla code editor integration.
+  - Node-based workflow execution from the Automation Builder.
 - **Phase 4: Multimodal Voice & Autonomous Agents**
-  - Local Whisper speech-to-text and Piper/Edge-TTS voice synthesis.
-  - Autonomous multi-agent coordination with persistent episodic memory.
+  - Local Whisper speech-to-text and Piper TTS voice feedback.
+  - Autonomous multi-step desktop workflows.
