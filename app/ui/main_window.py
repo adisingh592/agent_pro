@@ -42,8 +42,8 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(1024, 680)
 
         # Initialize Core Services
-        self.agent_core = AgentCore()
         self.model_manager = ModelManager()
+        self.agent_core = AgentCore(self.model_manager)
         self.task_manager = TaskManager()
         self.memory_store = MemoryStore()
         self.system_monitor = SystemMonitor(interval_ms=2500)
@@ -53,6 +53,15 @@ class MainWindow(QMainWindow):
 
         # Connect system monitor to status bar
         self.system_monitor.metrics_updated.connect(self._on_metrics_updated)
+        self.model_manager.connection_changed.connect(self._on_model_changed)
+        self.agent_core.status_changed.connect(self._on_agent_status_changed)
+
+        # Initial model status sync
+        self._on_model_changed(
+            self.model_manager.active_model_display,
+            self.model_manager.is_connected,
+            self.model_manager.processor_info
+        )
 
     def _init_ui(self) -> None:
         # Central Root Container
@@ -179,8 +188,35 @@ class MainWindow(QMainWindow):
             self.navigate_to_page("Agent Chat")
             self.search_box.clear()
 
-    def _on_metrics_updated(self, cpu: float, ram: float) -> None:
-        self.sb_metrics.setText(f"CPU: {cpu:.1f}% | RAM: {ram:.1f}% | Phase 1 Active")
+    def _on_model_changed(self, display_name: str, is_connected: bool, processor_info: str = "") -> None:
+        if is_connected:
+            proc_text = f" ({processor_info})" if processor_info else ""
+            self.sb_model_status.setText(f"        Ollama: {self.model_manager.active_model}{proc_text}")
+            self.sb_model_status.setStyleSheet("color: #8e929b;")
+            self.top_status_dot.setText("●  Agent ready (Ollama)")
+            self.top_status_dot.setStyleSheet("color: #9ca3af;")
+        else:
+            self.sb_model_status.setText("        Local model: not connected")
+            self.sb_model_status.setStyleSheet("color: #f87171;")
+            self.top_status_dot.setText("●  Ollama offline")
+            self.top_status_dot.setStyleSheet("color: #f87171;")
+
+    def _on_agent_status_changed(self, status: str) -> None:
+        if status.lower() == "working":
+            self.sb_agent_status.setText("● Working...")
+            self.sb_agent_status.setStyleSheet("color: #e59840; padding-left: 8px;")
+        else:
+            self.sb_agent_status.setText("● Agent Ready")
+            self.sb_agent_status.setStyleSheet("color: #9ca3af; padding-left: 8px;")
+
+    def _on_metrics_updated(self, cpu: float, ram: float, gpu: dict = None) -> None:
+        gpu_str = ""
+        if gpu and gpu.get("available"):
+            util = gpu.get("utilization", 0)
+            used_gb = gpu.get("vram_used_mb", 0) / 1024.0
+            total_gb = gpu.get("vram_total_mb", 0) / 1024.0
+            gpu_str = f" | GPU: {util}% ({used_gb:.1f}/{total_gb:.1f} GB)"
+        self.sb_metrics.setText(f"CPU: {cpu:.1f}% | RAM: {ram:.1f}%{gpu_str} | Phase 2.1")
 
     def _load_stylesheet(self) -> None:
         qss_path = Path(__file__).parent / "theme.qss"

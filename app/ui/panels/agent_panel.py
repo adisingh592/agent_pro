@@ -126,7 +126,7 @@ class RightAgentPanel(QFrame):
         self.model_name_lbl = QLabel(self.model_manager.active_model_display)
         self.model_name_lbl.setProperty("class", "panelCardTitle")
 
-        status_text = "Connected" if self.model_manager.is_connected else "Standby / Local"
+        status_text = f"Connected • {self.model_manager.processor_info}" if self.model_manager.is_connected else "Standby / Local"
         self.model_status_lbl = QLabel(status_text)
         self.model_status_lbl.setProperty("class", "panelCardSubtitle")
 
@@ -181,6 +181,9 @@ class RightAgentPanel(QFrame):
     def _on_activity_logged(self, activity: str) -> None:
         self._render_activities()
 
-    def _on_model_changed(self, display_name: str, is_connected: bool) -> None:
+    def _on_model_changed(self, display_name: str, is_connected: bool, processor_info: str = "") -> None:
         self.model_name_lbl.setText(display_name)
-        self.model_status_lbl.setText("Connected" if is_connected else "Standby / Local")
+        if is_connected:
+            self.model_status_lbl.setText(f"Connected • {processor_info}" if processor_info else "Connected • Local")
+        else:
+            self.model_status_lbl.setText("Disconnected • Standby")

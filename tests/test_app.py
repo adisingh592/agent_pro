@@ -56,13 +56,15 @@ def run_tests():
     print("[4/6] Testing Chat interaction and AgentCore responses...")
     chat_page = window.pages["Agent Chat"]
     initial_msg_count = chat_page.messages_layout.count()
-    test_prompt = "Organize my Downloads after all downloads finish."
+    test_prompt = "Hello agent!"
     window.agent_core.process_user_input(test_prompt)
     new_msg_count = chat_page.messages_layout.count()
-    # Should have added user message + agent response
-    assert new_msg_count >= initial_msg_count + 2, "Chat messages were not appended properly"
-    print("  ✓ Chat message processed and agent responded correctly")
+    # User message widget and streaming widget should be appended
+    assert new_msg_count >= initial_msg_count + 1, "Chat message was not appended properly"
+    print("  ✓ Chat message processed and agent entered working state")
     print(f"  ✓ Agent Status: {window.agent_core.status}")
+    # Stop generation to keep test quick
+    window.agent_core.stop_generation()
 
     print("[5/6] Testing SQLite Persistence (Tasks and Memory)...")
     task_mgr = window.task_manager

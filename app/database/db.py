@@ -46,10 +46,23 @@ class DatabaseManager:
                 CREATE TABLE IF NOT EXISTS messages (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     sender TEXT NOT NULL,
+                    role TEXT DEFAULT 'user',
                     content TEXT NOT NULL,
+                    model TEXT DEFAULT '',
+                    conversation_id TEXT DEFAULT 'default',
                     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
+
+            # Ensure columns exist if table was created in Phase 1
+            cursor.execute("PRAGMA table_info(messages)")
+            columns = [row["name"] for row in cursor.fetchall()]
+            if "role" not in columns:
+                cursor.execute("ALTER TABLE messages ADD COLUMN role TEXT DEFAULT 'user'")
+            if "model" not in columns:
+                cursor.execute("ALTER TABLE messages ADD COLUMN model TEXT DEFAULT ''")
+            if "conversation_id" not in columns:
+                cursor.execute("ALTER TABLE messages ADD COLUMN conversation_id TEXT DEFAULT 'default'")
 
             # Memory table
             cursor.execute("""
@@ -106,6 +119,35 @@ class DatabaseManager:
                     default_memory
                 )
                 conn.commit()
+
+    def save_message(self, role: str, content: str, model: str = "", conversation_id: str = "default") -> int:
+        """Save a user or assistant message to database."""
+        sender = "You" if role.lower() == "user" else "Agent"
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO messages (sender, role, content, model, conversation_id) VALUES (?, ?, ?, ?, ?)",
+                (sender, role, content, model, conversation_id)
+            )
+            conn.commit()
+            return cursor.lastrowid
+
+    def get_messages(self, conversation_id: str = "default", limit: int = 100) -> List[Dict[str, Any]]:
+        """Retrieve historical chat messages."""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT * FROM (SELECT * FROM messages WHERE conversation_id = ? ORDER BY id DESC LIMIT ?) ORDER BY id ASC",
+                (conversation_id, limit)
+            )
+            return [dict(row) for row in cursor.fetchall()]
+
+    def clear_messages(self, conversation_id: str = "default") -> None:
+        """Clear messages for a given conversation."""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM messages WHERE conversation_id = ?", (conversation_id,))
+            conn.commit()
 
 
 # Singleton instance
