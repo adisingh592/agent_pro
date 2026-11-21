@@ -86,14 +86,85 @@ class ChatMessageWidget(QFrame):
         self.content_label.setText(self._text)
 
 
+class ToolActivityWidget(QFrame):
+    """
+    Visual indicator card for tool invocation matching the professional
+    dark charcoal & amber desktop styling.
+    """
+
+    def __init__(self, tool_name: str, arguments: Optional[Dict[str, Any]] = None):
+        super().__init__()
+        self.tool_name = tool_name
+        self.arguments = arguments or {}
+        self._init_ui()
+
+    def _init_ui(self) -> None:
+        self.setStyleSheet("""
+            ToolActivityWidget {
+                background-color: #1c1e24;
+                border: 1px solid #2a2d36;
+                border-left: 3px solid #e59840;
+                border-radius: 6px;
+            }
+        """)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(12, 8, 12, 8)
+        layout.setSpacing(10)
+
+        self.icon_label = QLabel("⚙")
+        self.icon_label.setStyleSheet("color: #e59840; font-size: 13px; font-weight: bold;")
+        layout.addWidget(self.icon_label)
+
+        display_name = self.tool_name.replace("_", " ").title()
+        self.status_label = QLabel(f"Running tool: {display_name}...")
+        self.status_label.setStyleSheet("color: #9ca3af; font-size: 12px; font-family: 'Consolas', monospace;")
+        layout.addWidget(self.status_label, 1)
+
+        self.duration_label = QLabel("Executing...")
+        self.duration_label.setStyleSheet("color: #6b7280; font-size: 11px;")
+        layout.addWidget(self.duration_label)
+
+    def set_completed(self, success: bool, duration_ms: float, error_msg: str = "") -> None:
+        display_name = self.tool_name.replace("_", " ").title()
+        self.duration_label.setText(f"{duration_ms:.1f} ms")
+
+        if success:
+            self.icon_label.setText("✓")
+            self.icon_label.setStyleSheet("color: #10b981; font-size: 13px; font-weight: bold;")
+            self.status_label.setText(f"Tool: {display_name} — Retrieved successfully")
+            self.status_label.setStyleSheet("color: #d1d5db; font-size: 12px; font-family: 'Consolas', monospace;")
+            self.setStyleSheet("""
+                ToolActivityWidget {
+                    background-color: #1c1e24;
+                    border: 1px solid #233529;
+                    border-left: 3px solid #10b981;
+                    border-radius: 6px;
+                }
+            """)
+        else:
+            self.icon_label.setText("✗")
+            self.icon_label.setStyleSheet("color: #ef4444; font-size: 13px; font-weight: bold;")
+            self.status_label.setText(f"Tool: {display_name} — Failed: {error_msg}")
+            self.status_label.setStyleSheet("color: #fca5a5; font-size: 12px; font-family: 'Consolas', monospace;")
+            self.setStyleSheet("""
+                ToolActivityWidget {
+                    background-color: #241c1e;
+                    border: 1px solid #3d2326;
+                    border-left: 3px solid #ef4444;
+                    border-radius: 6px;
+                }
+            """)
+
+
 class ChatPage(QWidget):
-    """Full Chat page with conversation history, live streaming, and model controls."""
+    """Full Chat page with conversation history, live streaming, tool indicators, and model controls."""
 
     def __init__(self, agent_core: AgentCore, model_manager: ModelManager):
         super().__init__()
         self.agent_core = agent_core
         self.model_manager = model_manager
         self._active_stream_widget: Optional[ChatMessageWidget] = None
+        self._active_tool_widgets: Dict[str, ToolActivityWidget] = {}
 
         self._init_ui()
         self._load_conversation_history()
@@ -104,6 +175,10 @@ class ChatPage(QWidget):
         self.agent_core.stream_chunk.connect(self._on_stream_chunk)
         self.agent_core.stream_finished.connect(self._on_stream_finished)
         self.agent_core.stream_error.connect(self._on_stream_error)
+
+        # Connect Tool Engine signals (Phase 2.2.1)
+        self.agent_core.tool_call_started.connect(self._on_tool_started)
+        self.agent_core.tool_call_finished.connect(self._on_tool_finished)
 
         # Connect Model Manager updates
         self.model_manager.models_updated.connect(self._on_models_updated)
@@ -352,22 +427,54 @@ class ChatPage(QWidget):
         """)
 
     def _on_stream_chunk(self, chunk: str) -> None:
-        if self._active_stream_widget:
-            self._active_stream_widget.append_text(chunk)
-            self._scroll_to_bottom()
+        if self._active_stream_widget is None:
+            self._active_stream_widget = self._append_message_widget("Agent", "")
+        self._active_stream_widget.append_text(chunk)
+        self._scroll_to_bottom()
+
+    def _on_tool_started(self, tool_name: str, arguments: dict) -> None:
+        display_name = tool_name.replace("_", " ").title()
+        self.status_banner.setText(f"🔧 Using tool: {display_name}...")
+        self.status_banner.setStyleSheet("color: #e59840; font-size: 11px;")
+        
+        tool_widget = ToolActivityWidget(tool_name, arguments)
+        idx = max(0, self.messages_layout.count() - 1)
+        self.messages_layout.insertWidget(idx, tool_widget)
+        self._active_tool_widgets[tool_name] = tool_widget
+        self._scroll_to_bottom()
+
+    def _on_tool_finished(self, tool_name: str, result: dict, duration_ms: float, success: bool) -> None:
+        display_name = tool_name.replace("_", " ").title()
+        tool_widget = self._active_tool_widgets.get(tool_name)
+        if tool_widget:
+            err = result.get("error", "Failed") if not success else ""
+            tool_widget.set_completed(success, duration_ms, err)
+        
+        if success:
+            self.status_banner.setText(f"✓ {display_name} retrieved ({duration_ms:.1f}ms) • Analyzing...")
+            self.status_banner.setStyleSheet("color: #10b981; font-size: 11px;")
+        else:
+            self.status_banner.setText(f"✗ {display_name} error • Analyzing...")
+            self.status_banner.setStyleSheet("color: #ef4444; font-size: 11px;")
+        
+        self._scroll_to_bottom()
 
     def _on_stream_finished(self, full_text: str, stats: dict) -> None:
         self._active_stream_widget = None
+        self._active_tool_widgets.clear()
         speed = stats.get("tokens_per_sec", 0.0)
         eval_count = stats.get("eval_count", 0)
+        rounds = stats.get("rounds", 1)
+        round_info = f" in {rounds} round{'s' if rounds > 1 else ''}" if rounds > 1 else ""
         self.status_banner.setText(
-            f"Ready • Generated {eval_count} tokens ({speed:.1f} tokens/s) on {self.model_manager.active_model}"
+            f"Ready • Generated {eval_count} tokens ({speed:.1f} tokens/s){round_info} on {self.model_manager.active_model}"
         )
         self.status_banner.setStyleSheet("color: #8e929b; font-size: 11px;")
         self._reset_action_button()
 
     def _on_stream_error(self, err_msg: str) -> None:
         self._active_stream_widget = None
+        self._active_tool_widgets.clear()
         self._append_message_widget("System", err_msg, is_error=True)
         self.status_banner.setText(f"Inference error: {err_msg[:60]}")
         self.status_banner.setStyleSheet("color: #f87171; font-size: 11px;")
@@ -421,6 +528,8 @@ class ChatPage(QWidget):
         )
         if confirm == QMessageBox.Yes:
             self.agent_core.clear_conversation()
+            self._active_stream_widget = None
+            self._active_tool_widgets.clear()
             while self.messages_layout.count() > 1:
                 item = self.messages_layout.takeAt(0)
                 if item.widget():

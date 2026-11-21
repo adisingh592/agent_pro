@@ -1,9 +1,11 @@
 """
-Agent core orchestrator with background worker for non-blocking local LLM streaming.
-Manages conversation history, system prompt, execution states, and SQLite persistence.
+Agent core orchestrator with background worker for non-blocking local LLM streaming
+and multi-turn tool calling engine (Phase 2.2.1).
+Manages conversation history, system prompt, execution states, tools, and SQLite persistence.
 """
 import json
 import time
+import re
 import logging
 import urllib.request
 import urllib.error
@@ -12,46 +14,72 @@ from PySide6.QtCore import QObject, QThread, Signal
 
 from .model_manager import ModelManager
 from ..database.db import db_manager
+from ..tools import (
+    ToolRegistry,
+    ToolExecutor,
+    default_tool_registry,
+    default_tool_executor
+)
 
 logger = logging.getLogger("PersonalAgent.AgentCore")
 
 SYSTEM_PROMPT = (
-    "You are Personal Agent, a capable and professional desktop AI assistant running locally on the user's computer.\n"
-    "Your capabilities:\n"
-    "- Understand natural-language commands and assist with computer tasks.\n"
-    "- Assist with programming, coding analysis, debugging, and scripts.\n"
-    "- Help organize, review, and manage local files and workspaces.\n"
-    "- Help structure, plan, and automate multi-step desktop workflows.\n\n"
-    "Guidelines:\n"
+    "You are Personal Agent, a capable and professional desktop AI assistant running locally on the user's computer.\n\n"
+    "Available Tools:\n"
+    "You have access to safe, built-in system tools:\n"
+    "- 'get_current_time': Returns the current system date and time.\n"
+    "- 'get_system_info': Returns host OS, Windows version, computer name, CPU info, total/available RAM, and CPU usage.\n"
+    "- 'get_gpu_info': Returns NVIDIA GPU name, utilization, VRAM usage/capacity, and temperature.\n\n"
+    "Tool Usage Rules:\n"
+    "- When the user asks for the current time, date, or day, you MUST call 'get_current_time'.\n"
+    "- When the user asks about computer specifications, hardware specs, RAM, CPU, or Windows version, you MUST call 'get_system_info'.\n"
+    "- When the user asks about their GPU, graphics card, VRAM, or GPU temperature, you MUST call 'get_gpu_info'.\n"
+    "- For general questions that do not require real-time system metrics (e.g. coding help, advice, planning), answer directly without invoking tools.\n"
+    "- After receiving tool results, provide a clear, concise, and helpful natural-language summary. Do not output raw JSON unless specifically requested.\n\n"
+    "General Guidelines:\n"
     "- Be concise, direct, and practical.\n"
     "- If a request is ambiguous or lacks essential details, ask clarifying questions.\n"
     "- Never pretend to have executed actions, changed files, launched apps, or accessed websites that you have not actually performed.\n"
-    "- Clearly distinguish between planning a task and executing a task.\n"
-    "- In Phase 2.1, external tool execution (such as browser control, direct file modification, or voice recognition) is staged; do not claim those actions have taken place."
+    "- Clearly distinguish between planning a task and executing a task."
 )
 
 
 class OllamaChatWorker(QThread):
     """
-    Worker thread that streams responses from Ollama /api/chat.
-    Ensures the main Qt GUI remains completely responsive during model inference.
+    Worker thread that streams responses from Ollama /api/chat and coordinates
+    the tool execution loop across multiple rounds (up to 5 rounds).
+    Ensures the main Qt GUI remains completely responsive during model inference and tool runs.
     """
-    chunk_received = Signal(str)            # token string
-    finished = Signal(str, dict)            # full_text, stats dict
-    error = Signal(str)                     # error message
+    chunk_received = Signal(str)                         # token string
+    finished = Signal(str, dict)                         # full_text, stats dict
+    error = Signal(str)                                  # error message
     cancelled = Signal()
+    tool_started = Signal(str, dict)                     # tool_name, arguments
+    tool_completed = Signal(str, dict, float, bool)      # tool_name, result_dict, duration_ms, success
 
-    def __init__(self, endpoint: str, model: str, messages: List[Dict[str, str]], options: Dict[str, Any]):
+    def __init__(
+        self,
+        endpoint: str,
+        model: str,
+        messages: List[Dict[str, Any]],
+        options: Dict[str, Any],
+        tool_registry: Optional[ToolRegistry] = None,
+        tool_executor: Optional[ToolExecutor] = None,
+        conversation_id: str = "default"
+    ):
         super().__init__()
         self.endpoint = endpoint
         self.model = model
         self.messages = messages
         self.options = options
+        self.tool_registry = tool_registry or default_tool_registry
+        self.tool_executor = tool_executor or default_tool_executor
+        self.conversation_id = conversation_id
         self._is_cancelled = False
         self._response_handle = None
 
     def cancel(self):
-        """Request immediate abort of the streaming request."""
+        """Request immediate abort of the streaming request or tool execution."""
         self._is_cancelled = True
         if self._response_handle:
             try:
@@ -61,115 +89,242 @@ class OllamaChatWorker(QThread):
 
     def run(self):
         url = f"{self.endpoint}/api/chat"
-        payload = {
-            "model": self.model,
-            "messages": self.messages,
-            "stream": True,
-            "options": self.options
-        }
+        current_messages = list(self.messages)
+        tools = self.tool_registry.get_ollama_tools() if self.tool_registry else None
 
-        full_text = ""
+        max_rounds = 5
+        round_idx = 0
+        total_eval_count = 0
+        total_eval_duration_ns = 0
         start_time = time.time()
-        eval_count = 0
-        eval_duration_ns = 0
+        final_full_text = ""
 
-        is_thinking = False
-        try:
-            data_bytes = json.dumps(payload).encode("utf-8")
-            req = urllib.request.Request(
-                url,
-                data=data_bytes,
-                headers={"Content-Type": "application/json", "User-Agent": "PersonalAgent/1.0"}
-            )
+        while round_idx < max_rounds and not self._is_cancelled:
+            round_idx += 1
+            payload = {
+                "model": self.model,
+                "messages": current_messages,
+                "stream": True,
+                "options": self.options
+            }
+            if tools:
+                payload["tools"] = tools
 
-            # Use generous timeout for prompt evaluation & first token
-            response = urllib.request.urlopen(req, timeout=60)
-            self._response_handle = response
-
-            while not self._is_cancelled:
-                try:
-                    raw_line = response.readline()
-                except Exception as read_err:
-                    if not self._is_cancelled:
-                        logger.warning("Socket read ended: %s", read_err)
-                    break
-
-                if not raw_line:
-                    break
-
-                line_str = raw_line.decode("utf-8").strip()
-                if not line_str:
-                    continue
-
-                try:
-                    chunk = json.loads(line_str)
-                except Exception:
-                    continue
-
-                msg = chunk.get("message", {})
-                thinking_token = msg.get("thinking", "")
-                content_token = msg.get("content", "")
-
-                if thinking_token:
-                    if not is_thinking:
-                        is_thinking = True
-                        self.chunk_received.emit("<think>\n")
-                        full_text += "<think>\n"
-                    self.chunk_received.emit(thinking_token)
-                    full_text += thinking_token
-                elif content_token:
-                    if is_thinking:
-                        is_thinking = False
-                        self.chunk_received.emit("\n</think>\n\n")
-                        full_text += "\n</think>\n\n"
-                    self.chunk_received.emit(content_token)
-                    full_text += content_token
-
-                if chunk.get("done"):
-                    if is_thinking:
-                        is_thinking = False
-                        self.chunk_received.emit("\n</think>\n\n")
-                        full_text += "\n</think>\n\n"
-                    eval_count = chunk.get("eval_count", 0)
-                    eval_duration_ns = chunk.get("eval_duration", 0)
-                    break
+            round_content = ""
+            round_thinking = ""
+            is_thinking = False
+            detected_tool_calls: List[Dict[str, Any]] = []
 
             try:
-                response.close()
-            except Exception:
-                pass
+                data_bytes = json.dumps(payload).encode("utf-8")
+                req = urllib.request.Request(
+                    url,
+                    data=data_bytes,
+                    headers={"Content-Type": "application/json", "User-Agent": "PersonalAgent/1.0"}
+                )
+
+                response = urllib.request.urlopen(req, timeout=60)
+                self._response_handle = response
+
+                while not self._is_cancelled:
+                    try:
+                        raw_line = response.readline()
+                    except Exception as read_err:
+                        if not self._is_cancelled:
+                            logger.warning("Socket read ended: %s", read_err)
+                        break
+
+                    if not raw_line:
+                        break
+
+                    line_str = raw_line.decode("utf-8").strip()
+                    if not line_str:
+                        continue
+
+                    try:
+                        chunk = json.loads(line_str)
+                    except Exception:
+                        continue
+
+                    msg = chunk.get("message", {})
+                    thinking_token = msg.get("thinking", "")
+                    content_token = msg.get("content", "")
+                    tcs = msg.get("tool_calls")
+                    if tcs:
+                        detected_tool_calls.extend(tcs)
+
+                    if thinking_token:
+                        if not is_thinking:
+                            is_thinking = True
+                            self.chunk_received.emit("<think>\n")
+                        self.chunk_received.emit(thinking_token)
+                        round_thinking += thinking_token
+                    elif content_token:
+                        if is_thinking:
+                            is_thinking = False
+                            self.chunk_received.emit("\n</think>\n\n")
+                        self.chunk_received.emit(content_token)
+                        round_content += content_token
+
+                    if chunk.get("done"):
+                        if is_thinking:
+                            is_thinking = False
+                            self.chunk_received.emit("\n</think>\n\n")
+                        total_eval_count += chunk.get("eval_count", 0)
+                        total_eval_duration_ns += chunk.get("eval_duration", 0)
+                        break
+
+                try:
+                    response.close()
+                except Exception:
+                    pass
+
+            except urllib.error.URLError as url_err:
+                if not self._is_cancelled:
+                    msg = f"Cannot connect to Ollama at {self.endpoint}. Please verify the Ollama service is running."
+                    logger.error("Ollama connection error: %s", url_err)
+                    self.error.emit(msg)
+                return
+            except Exception as exc:
+                if not self._is_cancelled:
+                    logger.exception("Inference streaming error: %s", exc)
+                    self.error.emit(f"Inference error: {exc}")
+                return
 
             if self._is_cancelled:
                 self.cancelled.emit()
                 return
 
-            total_duration = time.time() - start_time
-            eval_duration_sec = eval_duration_ns / 1e9 if eval_duration_ns else total_duration
-            tokens_per_sec = (eval_count / eval_duration_sec) if eval_duration_sec > 0 else 0.0
+            # Structured fallback check if Ollama didn't return native tool_calls
+            if not detected_tool_calls and round_content:
+                detected_tool_calls = self._check_structured_tool_fallback(round_content)
 
-            stats = {
-                "eval_count": eval_count,
-                "total_duration": total_duration,
-                "tokens_per_sec": tokens_per_sec,
-                "model": self.model
-            }
-            self.finished.emit(full_text, stats)
+            # If tool calls were requested, execute them through the safety pipeline
+            if detected_tool_calls:
+                # Add assistant message with tool calls to context
+                assistant_msg = {
+                    "role": "assistant",
+                    "content": round_content,
+                    "tool_calls": detected_tool_calls
+                }
+                current_messages.append(assistant_msg)
 
-        except urllib.error.URLError as url_err:
-            if not self._is_cancelled:
-                msg = f"Cannot connect to Ollama at {self.endpoint}. Please verify the Ollama service is running."
-                logger.error("Ollama connection error: %s", url_err)
-                self.error.emit(msg)
-        except Exception as exc:
-            if not self._is_cancelled:
-                logger.exception("Inference streaming error: %s", exc)
-                self.error.emit(f"Inference error: {exc}")
+                for tc in detected_tool_calls:
+                    if self._is_cancelled:
+                        self.cancelled.emit()
+                        return
+
+                    func = tc.get("function", {})
+                    tool_name = func.get("name", "")
+                    args = func.get("arguments", {})
+                    if isinstance(args, str):
+                        try:
+                            args = json.loads(args)
+                        except Exception:
+                            args = {}
+
+                    # Notify tool starting
+                    self.tool_started.emit(tool_name, args)
+
+                    # Execute tool via executor (Validation -> Permission -> Safe execution)
+                    exec_result = self.tool_executor.execute(tool_name, args)
+                    result_dict = exec_result.to_dict()
+
+                    # Save to database
+                    try:
+                        db_manager.save_tool_execution(
+                            tool_name=tool_name,
+                            arguments=args,
+                            result=result_dict,
+                            status="success" if exec_result.success else "error",
+                            duration_ms=exec_result.duration_ms,
+                            conversation_id=self.conversation_id
+                        )
+                    except Exception as db_err:
+                        logger.warning("Failed to save tool execution: %s", db_err)
+
+                    # Notify tool completed
+                    self.tool_completed.emit(
+                        tool_name,
+                        result_dict,
+                        exec_result.duration_ms,
+                        exec_result.success
+                    )
+
+                    # Append tool response message to context
+                    tool_msg = {
+                        "role": "tool",
+                        "content": json.dumps(result_dict)
+                    }
+                    if "id" in tc:
+                        tool_msg["tool_call_id"] = tc["id"]
+                    current_messages.append(tool_msg)
+
+                # Continue next round to allow model to analyze tool results
+                continue
+
+            else:
+                # No tools requested: this was the final response
+                final_full_text = round_content
+                break
+
+        if self._is_cancelled:
+            self.cancelled.emit()
+            return
+
+        total_duration = time.time() - start_time
+        eval_duration_sec = total_eval_duration_ns / 1e9 if total_eval_duration_ns else total_duration
+        tokens_per_sec = (total_eval_count / eval_duration_sec) if eval_duration_sec > 0 else 0.0
+
+        stats = {
+            "eval_count": total_eval_count,
+            "total_duration": total_duration,
+            "tokens_per_sec": tokens_per_sec,
+            "model": self.model,
+            "rounds": round_idx
+        }
+        self.finished.emit(final_full_text, stats)
+
+    def _check_structured_tool_fallback(self, content: str) -> List[Dict[str, Any]]:
+        """
+        Structured JSON fallback: parses explicit tool calls embedded in model output
+        if the model produced structured JSON in text instead of native API tool_calls.
+        """
+        calls: List[Dict[str, Any]] = []
+        registered_names = set(self.tool_registry._tools.keys()) if self.tool_registry else set()
+
+        patterns = [
+            r'```(?:json)?\s*(\{\s*"name"\s*:\s*"[^"]+".*?\})\s*```',
+            r'(\{\s*"name"\s*:\s*"(?:get_current_time|get_system_info|get_gpu_info)"\s*,\s*"arguments"\s*:\s*\{.*?\}\s*\})',
+            r'<tool_call>\s*(\{\s*"name"\s*:\s*"[^"]+".*?\})\s*</tool_call>'
+        ]
+
+        for pattern in patterns:
+            matches = re.findall(pattern, content, re.DOTALL)
+            for m in matches:
+                try:
+                    parsed = json.loads(m.strip())
+                    if isinstance(parsed, dict) and "name" in parsed:
+                        tname = parsed.get("name")
+                        if tname in registered_names:
+                            calls.append({
+                                "id": f"call_fb_{int(time.time()*1000)}",
+                                "function": {
+                                    "name": tname,
+                                    "arguments": parsed.get("arguments", {})
+                                }
+                            })
+                except Exception:
+                    pass
+            if calls:
+                break
+        return calls
 
 
 class AgentCore(QObject):
     """
     Central Agent coordinator for the desktop application.
-    Orchestrates Ollama interaction, streaming worker threads, and UI signals.
+    Orchestrates Ollama interaction, streaming worker threads, tool engine, and UI signals.
     """
     status_changed = Signal(str)           # "Ready", "Thinking...", "Streaming...", "Idle"
     current_task_changed = Signal(str, str) # title, detail
@@ -180,10 +335,20 @@ class AgentCore(QObject):
     stream_chunk = Signal(str)             # token chunk
     stream_finished = Signal(str, dict)    # full_text, stats
     stream_error = Signal(str)             # error message
+    tool_call_started = Signal(str, dict)  # tool_name, arguments
+    tool_call_finished = Signal(str, dict, float, bool) # tool_name, result, duration_ms, success
 
-    def __init__(self, model_manager: Optional[ModelManager] = None):
+    def __init__(
+        self,
+        model_manager: Optional[ModelManager] = None,
+        tool_registry: Optional[ToolRegistry] = None,
+        tool_executor: Optional[ToolExecutor] = None
+    ):
         super().__init__()
         self.model_manager = model_manager or ModelManager()
+        self.tool_registry = tool_registry or default_tool_registry
+        self.tool_executor = tool_executor or default_tool_executor
+
         self._status = "Ready"
         self._current_task_title = "No task running"
         self._current_task_detail = "Waiting for instruction"
@@ -191,11 +356,12 @@ class AgentCore(QObject):
         self._recent_activities: List[str] = [
             "Application started",
             "Workspace initialized",
-            "Ollama integration active"
+            "Ollama integration active",
+            "Tool Engine initialized (3 safe tools ready)"
         ]
 
         # Multi-turn conversation context for LLM
-        self._conversation_history: List[Dict[str, str]] = [
+        self._conversation_history: List[Dict[str, Any]] = [
             {"role": "system", "content": SYSTEM_PROMPT}
         ]
 
@@ -277,7 +443,6 @@ class AgentCore(QObject):
 
         # 4. Check if Ollama is connected
         if not self.model_manager.is_connected:
-            # Try a quick reconnection check
             self.model_manager.check_connection()
 
         if not self.model_manager.is_connected:
@@ -292,13 +457,13 @@ class AgentCore(QObject):
 
         # 5. Update agent execution state
         self.set_status("Working")
-        self.set_execution_state("Generating response")
+        self.set_execution_state("Analyzing request")
         self.set_current_task("Inference with " + self.model_manager.active_model, cleaned[:40])
 
         # 6. Signal UI that a streaming response has started
         self.stream_started.emit("Agent")
 
-        # 7. Start worker thread for non-blocking Ollama generation
+        # 7. Start worker thread for non-blocking Ollama generation and tool execution
         options = {
             "temperature": self.model_manager.temperature,
             "num_ctx": self.model_manager.num_ctx,
@@ -309,16 +474,37 @@ class AgentCore(QObject):
             endpoint=self.model_manager.endpoint,
             model=self.model_manager.active_model,
             messages=list(self._conversation_history),
-            options=options
+            options=options,
+            tool_registry=self.tool_registry,
+            tool_executor=self.tool_executor,
+            conversation_id="default"
         )
         self._current_worker.chunk_received.connect(self._on_worker_chunk)
         self._current_worker.finished.connect(self._on_worker_finished)
         self._current_worker.error.connect(self._on_worker_error)
         self._current_worker.cancelled.connect(self._on_worker_cancelled)
+        self._current_worker.tool_started.connect(self._on_worker_tool_started)
+        self._current_worker.tool_completed.connect(self._on_worker_tool_completed)
         self._current_worker.start()
 
     def _on_worker_chunk(self, chunk: str) -> None:
         self.stream_chunk.emit(chunk)
+
+    def _on_worker_tool_started(self, tool_name: str, arguments: dict) -> None:
+        display_name = tool_name.replace("_", " ").title()
+        self.set_status("Working")
+        self.set_execution_state(f"Using tool: {display_name}")
+        self.set_current_task(f"Tool: {display_name}", "Executing system tool")
+        self.log_activity(f"🔧 Using tool: {display_name}")
+        self.tool_call_started.emit(tool_name, arguments)
+
+    def _on_worker_tool_completed(self, tool_name: str, result: dict, duration_ms: float, success: bool) -> None:
+        display_name = tool_name.replace("_", " ").title()
+        if success:
+            self.log_activity(f"✓ {display_name} retrieved ({duration_ms:.1f}ms)")
+        else:
+            self.log_activity(f"✗ {display_name} failed: {result.get('error', 'Error')}")
+        self.tool_call_finished.emit(tool_name, result, duration_ms, success)
 
     def _on_worker_finished(self, full_text: str, stats: dict) -> None:
         # Save assistant message to DB
@@ -333,7 +519,8 @@ class AgentCore(QObject):
         self.model_manager.query_running_processor()
 
         speed = stats.get("tokens_per_sec", 0.0)
-        self.log_activity(f"Generated {stats.get('eval_count', 0)} tokens ({speed:.1f} tok/s)")
+        rounds = stats.get("rounds", 1)
+        self.log_activity(f"Completed in {rounds} round(s) ({speed:.1f} tok/s)")
 
         self.stream_finished.emit(full_text, stats)
         self.set_status("Ready")
@@ -354,7 +541,7 @@ class AgentCore(QObject):
         self.set_current_task("No task running", "Waiting for instruction")
 
     def stop_generation(self) -> None:
-        """Interrupt and stop active model generation."""
+        """Interrupt and stop active model generation or tool execution."""
         worker = self._current_worker
         self._current_worker = None
         if worker and worker.isRunning():
