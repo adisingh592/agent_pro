@@ -3,7 +3,7 @@ Agent Chat Page - Real-time conversational interface with streaming local AI int
 Supports progressive token streaming, message persistence, stop generation, and model selection.
 """
 from typing import Optional, Dict, Any
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
     QPushButton, QFrame, QScrollArea, QComboBox, QMessageBox,
@@ -156,6 +156,148 @@ class ToolActivityWidget(QFrame):
             """)
 
 
+class ConfirmationCardWidget(QFrame):
+    """
+    Interactive confirmation card in chat for file write operations (Copy, Move, Rename, Organize).
+    Displays Action, Source, Destination, Risk warnings, with [Approve] and [Reject] actions.
+    """
+    confirmed = Signal(dict)
+    rejected = Signal(dict)
+
+    def __init__(self, data: dict):
+        super().__init__()
+        self.data = data
+        self._init_ui()
+
+    def _init_ui(self) -> None:
+        self.setStyleSheet("""
+            ConfirmationCardWidget {
+                background-color: #1a1c22;
+                border: 1px solid #e59840;
+                border-radius: 8px;
+            }
+        """)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 14, 16, 14)
+        layout.setSpacing(10)
+
+        # Header with Shield/Alert Icon
+        header_layout = QHBoxLayout()
+        icon_lbl = QLabel("🛡️")
+        icon_lbl.setStyleSheet("font-size: 14px;")
+        title_lbl = QLabel("File Operation Approval Required")
+        title_lbl.setStyleSheet("color: #e59840; font-size: 13px; font-weight: 700;")
+        header_layout.addWidget(icon_lbl)
+        header_layout.addWidget(title_lbl, 1)
+        layout.addLayout(header_layout)
+
+        # Details Grid
+        details_layout = QVBoxLayout()
+        details_layout.setSpacing(4)
+
+        action_text = self.data.get("action", "File Modification")
+        action_lbl = QLabel(f"<b>Action:</b> {action_text}")
+        action_lbl.setStyleSheet("color: #ffffff; font-size: 12px;")
+        details_layout.addWidget(action_lbl)
+
+        source_text = self.data.get("source", "")
+        if source_text and source_text != "None":
+            src_lbl = QLabel(f"<b>Source:</b> <code>{source_text}</code>")
+            src_lbl.setStyleSheet("color: #d1d5db; font-size: 12px;")
+            src_lbl.setWordWrap(True)
+            details_layout.addWidget(src_lbl)
+
+        dest_text = self.data.get("destination", "")
+        if dest_text:
+            dest_lbl = QLabel(f"<b>Destination:</b> <code>{dest_text}</code>")
+            dest_lbl.setStyleSheet("color: #d1d5db; font-size: 12px;")
+            dest_lbl.setWordWrap(True)
+            details_layout.addWidget(dest_lbl)
+
+        risk_text = self.data.get("risk", "")
+        if risk_text:
+            risk_lbl = QLabel(f"<b>Risk:</b> {risk_text}")
+            risk_lbl.setStyleSheet("color: #fca5a5; font-size: 11px;")
+            risk_lbl.setWordWrap(True)
+            details_layout.addWidget(risk_lbl)
+
+        layout.addLayout(details_layout)
+
+        # Action Buttons
+        self.btn_layout = QHBoxLayout()
+        self.btn_layout.setSpacing(10)
+
+        self.approve_btn = QPushButton("✓ Approve & Execute")
+        self.approve_btn.setCursor(Qt.PointingHandCursor)
+        self.approve_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #e59840;
+                border: none;
+                border-radius: 4px;
+                color: #131417;
+                font-weight: 700;
+                font-size: 12px;
+                padding: 6px 16px;
+            }
+            QPushButton:hover {
+                background-color: #f0a34b;
+            }
+        """)
+        self.approve_btn.clicked.connect(self._on_approve)
+
+        self.reject_btn = QPushButton("✕ Reject")
+        self.reject_btn.setCursor(Qt.PointingHandCursor)
+        self.reject_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #2a2d36;
+                border: 1px solid #3e434f;
+                border-radius: 4px;
+                color: #d1d5db;
+                font-size: 12px;
+                padding: 6px 14px;
+            }
+            QPushButton:hover {
+                background-color: #3e434f;
+                color: #ffffff;
+            }
+        """)
+        self.reject_btn.clicked.connect(self._on_reject)
+
+        self.btn_layout.addStretch()
+        self.btn_layout.addWidget(self.reject_btn)
+        self.btn_layout.addWidget(self.approve_btn)
+        layout.addLayout(self.btn_layout)
+
+    def _on_approve(self) -> None:
+        self.approve_btn.setEnabled(False)
+        self.reject_btn.setEnabled(False)
+        self.approve_btn.setText("Executing...")
+        self.confirmed.emit(self.data)
+
+    def _on_reject(self) -> None:
+        self.approve_btn.setEnabled(False)
+        self.reject_btn.setEnabled(False)
+        self.setStyleSheet("""
+            ConfirmationCardWidget {
+                background-color: #1c1e24;
+                border: 1px solid #5a272b;
+                border-radius: 8px;
+            }
+        """)
+        self.reject_btn.setText("Rejected ✗")
+        self.rejected.emit(self.data)
+
+    def set_result(self, success: bool, message: str) -> None:
+        while self.btn_layout.count():
+            item = self.btn_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        status_lbl = QLabel(f"✓ {message}" if success else f"✗ {message}")
+        status_lbl.setStyleSheet(f"color: {'#10b981' if success else '#ef4444'}; font-size: 12px; font-weight: bold;")
+        self.btn_layout.addWidget(status_lbl)
+
+
 class ChatPage(QWidget):
     """Full Chat page with conversation history, live streaming, tool indicators, and model controls."""
 
@@ -176,9 +318,10 @@ class ChatPage(QWidget):
         self.agent_core.stream_finished.connect(self._on_stream_finished)
         self.agent_core.stream_error.connect(self._on_stream_error)
 
-        # Connect Tool Engine signals (Phase 2.2.1)
+        # Connect Tool Engine signals (Phase 2.2.1 & 2.2.2)
         self.agent_core.tool_call_started.connect(self._on_tool_started)
         self.agent_core.tool_call_finished.connect(self._on_tool_finished)
+        self.agent_core.confirmation_requested.connect(self._on_confirmation_requested)
 
         # Connect Model Manager updates
         self.model_manager.models_updated.connect(self._on_models_updated)
@@ -453,10 +596,40 @@ class ChatPage(QWidget):
         if success:
             self.status_banner.setText(f"✓ {display_name} retrieved ({duration_ms:.1f}ms) • Analyzing...")
             self.status_banner.setStyleSheet("color: #10b981; font-size: 11px;")
+        elif result.get("requires_confirmation"):
+            self.status_banner.setText(f"🛡️ Action staged: Awaiting your approval for {display_name}")
+            self.status_banner.setStyleSheet("color: #e59840; font-size: 11px;")
         else:
             self.status_banner.setText(f"✗ {display_name} error • Analyzing...")
             self.status_banner.setStyleSheet("color: #ef4444; font-size: 11px;")
         
+        self._scroll_to_bottom()
+
+    def _on_confirmation_requested(self, conf_data: dict) -> None:
+        """Display an interactive file approval card in the chat."""
+        card = ConfirmationCardWidget(conf_data)
+        card.confirmed.connect(self._on_card_confirmed)
+        card.rejected.connect(self._on_card_rejected)
+        idx = max(0, self.messages_layout.count() - 1)
+        self.messages_layout.insertWidget(idx, card)
+        self._scroll_to_bottom()
+
+    def _on_card_confirmed(self, conf_data: dict) -> None:
+        tool_name = conf_data.get("tool", "")
+        args = conf_data.get("arguments", {})
+        sender_card = self.sender()
+        res = self.agent_core.execute_confirmed_tool(tool_name, args)
+        if sender_card and hasattr(sender_card, "set_result"):
+            is_success = res.get("success", True)
+            status_text = res.get("result", {}).get("status", "Operation completed and verified.") if is_success else res.get("error", "Execution failed")
+            sender_card.set_result(is_success, status_text)
+        self._scroll_to_bottom()
+
+    def _on_card_rejected(self, conf_data: dict) -> None:
+        sender_card = self.sender()
+        if sender_card and hasattr(sender_card, "set_result"):
+            sender_card.set_result(False, "Operation rejected by user.")
+        self.agent_core.log_activity("Operation rejected by user")
         self._scroll_to_bottom()
 
     def _on_stream_finished(self, full_text: str, stats: dict) -> None:

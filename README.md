@@ -6,9 +6,9 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 
 ---
 
-## 📌 Project Status: Phase 2.2.1 (Complete & Verified)
+## 📌 Project Status: Phase 2.2.2 (Complete & Verified)
 
-> **Current Milestone**: Phase 2.2.1 — Agent Tool Engine  
+> **Current Milestone**: Phase 2.2.2 — File Intelligence & Safe File Operations  
 > **Target Hardware**: NVIDIA GeForce RTX 3050 Laptop GPU (6GB VRAM) / Intel Core i7-13650HX / 32GB RAM / Windows 11  
 > **Model**: `qwen3:8b` (5.2 GB GGUF, Q4_K_M) via Ollama (`llamacpp` CUDA v12 runner)  
 > **Repository**: [https://github.com/adisingh592/agent_pro.git](https://github.com/adisingh592/agent_pro.git)  
@@ -19,21 +19,20 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 
 1. [Project Completion & Progress Tracker](#-project-completion--progress-tracker)
 2. [Features Overview](#-features-overview)
-3. [Phase 2.2.1 — Agent Tool Engine](#-phase-221--agent-tool-engine)
-   - [Tool Execution Architecture & Flow Diagram](#1-tool-execution-architecture--flow-diagram)
-   - [Tool Registry & Extensibility](#2-tool-registry--extensibility)
-   - [Available Built-in Tools](#3-available-built-in-tools)
-   - [Permission System & Safety Policies](#4-permission-system--safety-policies)
-   - [Model Tool-Calling Mechanism & Fallback](#5-model-tool-calling-mechanism--structured-fallback)
-   - [UI Integration & Indicators](#6-ui-integration--indicators)
-   - [SQLite Tool Execution Persistence](#7-sqlite-tool-execution-persistence)
-4. [Phase 2.1 — Local AI Integration & NVIDIA GPU Acceleration](#-phase-21--local-ai-integration--nvidia-gpu-acceleration)
-5. [Application Layout & Pages](#-application-layout--pages)
-6. [Project Structure](#-project-structure)
-7. [Database Schema](#-database-schema)
-8. [Getting Started & Installation](#-getting-started--installation)
-9. [Verification & Benchmark Tests](#-verification--benchmark-tests)
-10. [Roadmap Ahead](#-roadmap-ahead)
+3. [Phase 2.2.2 — File Intelligence & Safe File Operations](#-phase-222--file-intelligence--safe-file-operations)
+   - [Filesystem Safety Architecture & Boundaries](#1-filesystem-safety-architecture--boundaries)
+   - [Read-Only File Tools](#2-read-only-file-tools)
+   - [Controlled Modification Tools & Verification](#3-controlled-modification-tools--verification)
+   - [Interactive Confirmation System](#4-interactive-confirmation-system)
+   - [Smart File Organization Workflow](#5-smart-file-organization-workflow)
+4. [Phase 2.2.1 — Agent Tool Engine](#-phase-221--agent-tool-engine)
+5. [Phase 2.1 — Local AI Integration & NVIDIA GPU Acceleration](#-phase-21--local-ai-integration--nvidia-gpu-acceleration)
+6. [Application Layout & Pages](#-application-layout--pages)
+7. [Project Structure](#-project-structure)
+8. [Database Schema](#-database-schema)
+9. [Getting Started & Installation](#-getting-started--installation)
+10. [Verification & Benchmark Tests](#-verification--benchmark-tests)
+11. [Roadmap Ahead](#-roadmap-ahead)
 
 ---
 
@@ -46,7 +45,7 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 | **Phase 1: Desktop UI Foundation** | PySide6 3-part layout, 11 navigation pages, dark charcoal/amber theme, SQLite setup, high-DPI scaling. | ✅ Complete | **100%** |
 | **Phase 2.1: Local AI Integration** | Ollama local daemon API, `qwen3:8b` discovery, NVIDIA RTX 3050 6GB GPU acceleration (70% offload), non-blocking token streaming, chat history. | ✅ Complete | **100%** |
 | **Phase 2.2.1: Agent Tool Engine** | 5-stage tool execution pipeline, JSON Schema validation, permissions policy, multi-round tool loop, chat tool badges, 3 built-in safe tools. | ✅ Complete | **100%** |
-| **Phase 2.2.2: File Operations** | File search, read, copy, move, rename, directory indexing, download monitoring, write confirmation dialogs. | ⏳ Pending | **0%** |
+| **Phase 2.2.2: File Operations** | File search, list, metadata, text reading, recent/large files, verified copy/move/rename/mkdir, interactive confirmation UI, smart organization. | ✅ Complete | **100%** |
 | **Phase 2.2.3: App & Process Control** | Windows application launcher, process status inspection, graceful app termination. | ⏳ Pending | **0%** |
 | **Phase 3: Coding IDE & Automation** | Code editor with syntax highlighting, project tree, terminal integration, visual workflow node execution. | ⏳ Pending | **0%** |
 | **Phase 4: Multimodal & Voice** | Offline local Whisper speech-to-text, Piper TTS voice feedback, autonomous multi-step desktop workflows. | ⏳ Pending | **0%** |
@@ -55,8 +54,8 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 [Phase 1]     ████████████████████ 100% Complete
 [Phase 2.1]   ████████████████████ 100% Complete
 [Phase 2.2.1] ████████████████████ 100% Complete
-[Phase 2.2.2] ░░░░░░░░░░░░░░░░░░░░   0% Staged (Next)
-[Phase 2.2.3] ░░░░░░░░░░░░░░░░░░░░   0% Staged
+[Phase 2.2.2] ████████████████████ 100% Complete
+[Phase 2.2.3] ░░░░░░░░░░░░░░░░░░░░   0% Staged (Next)
 [Phase 3]     ░░░░░░░░░░░░░░░░░░░░   0% Staged
 [Phase 4]     ░░░░░░░░░░░░░░░░░░░░   0% Staged
 ```
@@ -78,22 +77,120 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 
 3. **⚙️ Agent Tool Engine (Phase 2.2.1 — 100% Verified)**:
    - **5-Stage Tool Pipeline**: Request → Schema Validation → Permission Policy Check → Isolated Execution with Duration Timing → Natural Language Analysis.
-   - **3 Live Built-in Safe Tools**:
-     - `get_current_time`: Returns system date, time, and timestamp in 0.05 ms.
-     - `get_system_info`: Inspects OS, Windows version, computer name, CPU info, RAM total/available, and CPU usage % in 166 ms without credential leakage.
-     - `get_gpu_info`: Queries `nvidia-smi` for GPU model, utilization %, VRAM usage/capacity, and GPU temperature in 57 ms with graceful fallback.
-   - **Multi-Round Execution Loop**: Automatic round-trip tool execution (up to 5 rounds) where Qwen calls a tool, receives structured JSON, and formulates a human-readable summary.
-   - **Structured Fallback**: Catches markdown/JSON tool calls in text if non-native formatting occurs.
-   - **Chat Tool Indicators**: Real-time `ToolActivityWidget` cards embedded in chat showing tool status, duration, and success/failure badges.
+   - Multi-round tool execution loop (up to 5 rounds) with structured JSON fallback.
+   - Real-time `ToolActivityWidget` cards embedded in chat showing tool status, duration, and success/failure badges.
 
-4. **🗄️ Database & Storage (100% Verified)**:
+4. **📁 File Intelligence & Safe File Operations (Phase 2.2.2 — 100% Verified)**:
+   - **Filesystem Safety Guard**: Strict blocking of `C:\Windows`, `System32`, `Program Files`, and `ProgramData`. Traversal protection (`..` escape prevention). Canonical resolution.
+   - **6 Read-Only Tools (Auto-Approved)**:
+     - `search_files`: Wildcard file search (`*.py`, `*report*`) with 500-result limit and recursive traversal.
+     - `list_directory`: Folder listing with file/directory classification, sizes, and timestamps.
+     - `get_file_info`: Metadata extraction (full path, size, extension, created/modified dates).
+     - `read_text_file`: Safe text reading across 25+ extensions (UTF-8 with Latin-1 fallback, 10MB cap, binary blocking).
+     - `find_recent_files`: Finds files modified within the past N days.
+     - `find_large_files`: Identifies files exceeding a size threshold (MB), sorted largest first.
+   - **4 Controlled Modification Tools (Requires User Approval)**:
+     - `copy_file`: Destination existence and size match verification.
+     - `move_file`: Relocation with post-move verification (source removed, destination confirmed).
+     - `rename_file`: In-place rename with path-injection protection.
+     - `create_directory`: Validated folder creation.
+   - **Smart File Organization**:
+     - `organize_files_preview`: Analyzes files and generates proposed category plans (Documents, Images, Videos, Audio, Archives, Installers, Code, Other).
+     - `organize_files`: Safely moves files into categorized subfolders without overwrite conflicts.
+   - **Interactive Confirmation UI**: `ConfirmationCardWidget` embedded in chat prompting users with `[Approve & Execute]` and `[Reject]` actions for all write operations.
+
+5. **🗄️ Database & Storage (100% Verified)**:
    - SQLite database (`data/agent_database.sqlite`) with 5 active tables: `messages`, `tasks`, `memory_items`, `activity_logs`, and `tool_executions`.
-   - Automatic hydration of conversation context upon application launch.
+   - Comprehensive audit logging recording tool names, arguments, results, verification status, and execution durations.
 
-5. **📊 Automated Test Coverage (17 / 17 Tests Passing — 100%)**:
+6. **📊 Automated Test Coverage (22 / 22 Tests Passing — 100%)**:
+   - `tests/test_phase2_2_2.py`: **5 / 5 PASSED** (Filesystem safety, read-only tools, modifications with verification, organization, database auditing)
    - `tests/test_phase2_2_1.py`: **6 / 6 PASSED** (Registry, Validation, Tools, Permissions, SQLite logging, Live Round-Trip)
    - `tests/test_phase2.py`: **5 / 5 PASSED** (Ollama online, `qwen3:8b` detected, RTX 3050 6GB stats, 18.5 tok/s inference, stop mechanism)
    - `tests/test_app.py`: **6 / 6 PASSED** (All 11 UI pages navigation, resizing responsiveness, theme consistency)
+
+---
+
+## 📁 Phase 2.2.2 — File Intelligence & Safe File Operations
+
+Phase 2.2.2 elevates Personal Agent into a capable, filesystem-aware desktop assistant. It can discover, inspect, read, organize, and manipulate local files while maintaining absolute security boundaries and requiring user confirmation for every modification.
+
+### 1. Filesystem Safety Architecture & Boundaries
+
+All file requests must pass through `FilesystemSafety` (`app/tools/filesystem_safety.py`):
+- **Canonical Path Resolution**: Uses `Path(p).resolve()` to eliminate relative `..` segments and symlinks.
+- **Restricted System Directories**: Automated operations are completely blocked from accessing or altering:
+  - Windows installation directories (`C:\Windows`, `C:\Windows\System32`, `C:\Windows\SysWOW64`)
+  - Application binaries (`C:\Program Files`, `C:\Program Files (x86)`, `C:\ProgramData`)
+  - Recovery, `$Recycle.Bin`, System Volume Information, and boot partitions.
+- **Allowed Workspaces**: User-selected folders, workspace directories, and common folders (Desktop, Documents, Downloads, Pictures).
+
+---
+
+### 2. Read-Only File Tools (Auto-Approved)
+
+| Tool Name | Parameters | Description |
+| :--- | :--- | :--- |
+| **`search_files`** | `directory`, `pattern`, `recursive` | Wildcard search (e.g. `*.py`, `*notes*`). Caps output at 500 files to protect memory. |
+| **`list_directory`** | `directory`, `include_hidden` | Lists files and subfolders with types, readable sizes, and modification timestamps. |
+| **`get_file_info`** | `path` | Detailed metadata: canonical path, file extension, size in bytes/readable units, created/modified dates. |
+| **`read_text_file`** | `path`, `max_characters` | Safely reads text/code files (TXT, PY, JS, TS, HTML, CSS, JSON, MD, etc.). Capped at 10 MB with binary detection. |
+| **`find_recent_files`**| `directory`, `days`, `recursive` | Finds files modified within the last N days, sorted newest first. |
+| **`find_large_files`** | `directory`, `minimum_size_mb`, `recursive` | Finds large files exceeding a size threshold, sorted largest to smallest. |
+| **`organize_files_preview`** | `directory` | Analyzes a folder and produces a categorized sorting preview without touching any files. |
+
+---
+
+### 3. Controlled Modification Tools & Verification
+
+All file write tools require explicit user confirmation. Operations are audited and rigorously verified:
+
+| Tool Name | Action | Verification Rule |
+| :--- | :--- | :--- |
+| **`copy_file`** | Copies file from source to destination. | Verifies destination exists and exact byte size matches source. |
+| **`move_file`** | Relocates file from source to destination. | Verifies destination exists and source no longer exists on disk. |
+| **`rename_file`** | Renames a file or folder in-place. | Verifies new file exists, old file is gone, and rejects path injection. |
+| **`create_directory`** | Creates a new folder. | Verifies directory was created and is accessible. |
+| **`organize_files`** | Moves files into typed subfolders. | Moves files into typed subfolders with automatic conflict prevention. |
+
+---
+
+### 4. Interactive Confirmation System
+
+When the model invokes a file modification tool, `ToolExecutor` halts automated execution and emits a `confirmation_requested` signal. The Chat UI renders an interactive `ConfirmationCardWidget`:
+
+```text
+┌────────────────────────────────────────────────────────────┐
+│ 🛡️ File Operation Approval Required                        │
+│                                                            │
+│ Action: Move File                                          │
+│ Source: C:\Users\Downloads\quarterly_report.pdf            │
+│ Destination: C:\Users\Documents\PDFs\quarterly_report.pdf   │
+│ Risk: Source file will be relocated to destination.        │
+│                                                            │
+│                          [✕ Reject]   [✓ Approve & Execute]│
+└────────────────────────────────────────────────────────────┘
+```
+
+- Clicking **`[✓ Approve & Execute]`**: Triggers `agent_core.execute_confirmed_tool()`, performs the operation with post-execution verification, updates the card to green (`✓ Operation completed and verified.`), and logs the audit record to SQLite.
+- Clicking **`[✕ Reject]`**: Aborts the operation, updates the card to red (`✗ Operation rejected by user.`), and prevents any filesystem modification.
+
+---
+
+### 5. Smart File Organization Workflow
+
+Personal Agent can organize cluttered directories (such as Downloads) automatically using standard file type categories:
+
+1. **Documents**: PDF, DOC, DOCX, TXT, MD, PPT, PPTX, XLS, XLSX, CSV
+2. **Images**: PNG, JPG, JPEG, GIF, BMP, WEBP, SVG
+3. **Videos**: MP4, MKV, AVI, MOV, WMV
+4. **Audio**: MP3, WAV, FLAC, AAC, OGG
+5. **Archives**: ZIP, RAR, 7Z, TAR, GZ
+6. **Installers**: EXE, MSI
+7. **Code**: PY, JAVA, C, CPP, H, CS, JS, TS, HTML, CSS, JSON, SQL, SH, BAT, PS1
+8. **Other**: Uncategorized files
+
+**Preview-First Guarantee**: Calling `organize_files_preview` provides the proposed plan first. If approved via `organize_files`, typed subfolders are created and files are relocated without overwriting existing files.
 
 ---
 
@@ -302,7 +399,7 @@ The application is structured into a persistent 3-part layout:
 │ 📜 History   │                                                              │                   │
 │ ⚙️ Settings   │                                                              │                   │
 ├──────────────┴──────────────────────────────────────────────────────────────┴───────────────────┤
-│ ● Ollama: Online (qwen3:8b)   |   CPU: 12.4%   |   RAM: 72.1%   |   GPU: 14% (5.4/6.0 GB)  | v2.2.1 │
+│ ● Ollama: Online (qwen3:8b)   |   CPU: 12.4%   |   RAM: 72.1%   |   GPU: 14% (5.4/6.0 GB)  | v2.2.2 │
 └─────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -324,7 +421,7 @@ PersonalAgent/
 │   │   │
 │   │   ├── pages/               # 11 Modular workspace views
 │   │   │   ├── home_page.py     # Command input, quick actions, active tasks
-│   │   │   ├── chat_page.py     # Streaming chat UI, ToolActivityWidget, model selector
+│   │   │   ├── chat_page.py     # Streaming chat UI, ToolActivityWidget, ConfirmationCardWidget
 │   │   │   ├── tasks_page.py    # Metric counters, task queue, and creation dialog
 │   │   │   ├── files_page.py    # Local file manager with Windows drive selector
 │   │   │   ├── browser_page.py  # AI browser layout with controls & viewport
@@ -341,18 +438,20 @@ PersonalAgent/
 │   │
 │   ├── core/
 │   │   ├── __init__.py
-│   │   ├── agent.py             # AgentCore & OllamaChatWorker (multi-round tool execution loop)
+│   │   ├── agent.py             # AgentCore & OllamaChatWorker (multi-round loop & confirmation)
 │   │   ├── model_manager.py     # ModelManager (Ollama API, model discovery, GPU query)
 │   │   ├── task_manager.py      # SQLite task queue manager
 │   │   └── system_monitor.py    # CPU, RAM, and NVIDIA GPU metrics monitor
 │   │
-│   ├── tools/                   # Phase 2.2.1 Agent Tool Engine
-│   │   ├── __init__.py          # Tool package initialization & auto-registration
+│   ├── tools/                   # Extensible Tool Subsystem
+│   │   ├── __init__.py          # Package initialization & tool registration
 │   │   ├── tool_registry.py     # ToolRegistry & ToolDefinition schemas
 │   │   ├── tool_validator.py    # ToolValidator schema and type enforcement
 │   │   ├── tool_permissions.py  # ToolPermissionPolicy & PermissionLevel
-│   │   ├── tool_executor.py     # ToolExecutor with timing, containment, and safety
-│   │   └── built_in_tools.py    # Safe tools: get_current_time, get_system_info, get_gpu_info
+│   │   ├── tool_executor.py     # ToolExecutor with timing, confirmation & safety
+│   │   ├── built_in_tools.py    # System tools: get_current_time, get_system_info, get_gpu_info
+│   │   ├── filesystem_safety.py # FilesystemSafety: system folder blocking & traversal checks
+│   │   └── file_tools.py        # 12 file intelligence, modification & organization tools
 │   │
 │   ├── automation/              # Staged for workflow automation
 │   ├── memory/
@@ -362,10 +461,11 @@ PersonalAgent/
 │
 ├── data/                        # Persistent SQLite database (`agent_database.sqlite`)
 ├── logs/                        # Standard logging output (`personal_agent.log`)
-├── tests/                       # Automated test suites
+├── tests/                       # Automated test suites (22 / 22 Tests Passing)
 │   ├── test_app.py              # Phase 1 UI, navigation, and resize verification
 │   ├── test_phase2.py           # Phase 2.1 Ollama, streaming, GPU benchmark suite
 │   ├── test_phase2_2_1.py       # Phase 2.2.1 Tool registry, validator, executor, and agent loop
+│   ├── test_phase2_2_2.py       # Phase 2.2.2 Filesystem safety, file tools & organization
 │   └── screenshots/             # Rendered test screenshots matching UI reference
 ├── ui images/                   # Provided UI reference screenshots
 └── README.md                    # Project documentation & progress report
@@ -389,7 +489,7 @@ CREATE TABLE IF NOT EXISTS messages (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tool execution audit log (Phase 2.2.1)
+-- Tool execution audit log (Phase 2.2.1 & 2.2.2)
 CREATE TABLE IF NOT EXISTS tool_executions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     conversation_id TEXT DEFAULT 'default',
@@ -477,30 +577,35 @@ CREATE TABLE IF NOT EXISTS activity_logs (
 
 ## 🧪 Verification & Benchmark Tests
 
-### 1. Phase 2.2.1 Agent Tool Engine Suite
+### 1. Phase 2.2.2 File Intelligence & Operations Suite
 ```bash
-python tests/test_phase2_2_1.py
+python tests/test_phase2_2_2.py
 ```
 **Test Results**:
 ```text
 ========================================================
- ALL PHASE 2.2.1 TESTS PASSED SUCCESSFULLY! (6/6)       
+ ALL PHASE 2.2.2 TESTS PASSED SUCCESSFULLY! (5/5)       
 ========================================================
-[1/6] Testing Tool Registration...       --> PASSED (Registration, retrieval & Ollama format)
-[2/6] Testing Tool Validation...         --> PASSED (Required keys, types & unexpected params)
-[3/6] Testing Built-in Tools Execution.. --> PASSED (time: 0.05ms, sys: 166ms, gpu: 57ms)
-[4/6] Testing Tool Permissions...        --> PASSED (Safe read auto-approved, destructive rejected)
-[5/6] Testing SQLite Tool History...     --> PASSED (Logged to tool_executions table)
-[6/6] Testing Live Agent Tool Loop...    --> PASSED (Qwen 3 called get_current_time, formulated answer)
+[1/5] Testing Filesystem Safety & Path Boundaries... --> PASSED (Blocked Windows, System32, traversal)
+[2/5] Testing Read-Only File Tools...                --> PASSED (search, list, metadata, text read, recent, large)
+[3/5] Testing Modifications & Verification...        --> PASSED (copy, move, rename, mkdir with verification)
+[4/5] Testing Smart File Organization...             --> PASSED (preview & confirmed typed sorting)
+[5/5] Testing Database Audit Logging...              --> PASSED (logged with confirmed status & duration)
 ```
 
-### 2. Phase 2.1 Hardware & GPU Benchmark Suite
+### 2. Phase 2.2.1 Agent Tool Engine Suite
+```bash
+python tests/test_phase2_2_1.py
+```
+*(Verifies tool registration, JSON schema validation, permissions, 3 safe built-in tools, and multi-round agent loop).*
+
+### 3. Phase 2.1 Hardware & GPU Benchmark Suite
 ```bash
 python tests/test_phase2.py
 ```
 *(Verifies Ollama connectivity, `qwen3:8b` detection, RTX 3050 GPU monitoring, and 18.3–20.4 tokens/s streaming).*
 
-### 3. Phase 1 UI & Regression Suite
+### 4. Phase 1 UI & Regression Suite
 ```bash
 python tests/test_app.py
 ```
@@ -510,9 +615,6 @@ python tests/test_app.py
 
 ## 🔮 Roadmap Ahead
 
-- **Phase 2.2.2: Safe File Operations & File Management Tools**
-  - Read files, search files, move files, copy files, rename files, create directories.
-  - User confirmation dialogs for write operations.
 - **Phase 2.2.3: Application Management & System Automation**
   - Launch applications, detect running processes, graceful process termination.
 - **Phase 3: Coding IDE & Automation Engine**

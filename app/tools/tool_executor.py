@@ -1,6 +1,6 @@
 """
 Tool Executor for Personal Agent.
-Coordinates validation, permission enforcement, execution isolation, and result formatting.
+Coordinates validation, permission enforcement, execution isolation, confirmation requests, and result formatting.
 """
 import time
 import logging
@@ -9,7 +9,7 @@ from typing import Dict, Any, Optional
 
 from .tool_registry import ToolRegistry, default_tool_registry
 from .tool_validator import ToolValidator
-from .tool_permissions import ToolPermissionPolicy, default_permission_policy
+from .tool_permissions import ToolPermissionPolicy, PermissionLevel, default_permission_policy
 
 logger = logging.getLogger("PersonalAgent.ToolExecutor")
 
@@ -22,6 +22,8 @@ class ToolExecutionResult:
     result: Optional[Any] = None
     error: Optional[str] = None
     duration_ms: float = 0.0
+    requires_confirmation: bool = False
+    confirmation_data: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to structured dictionary representation for LLM and UI."""
@@ -30,6 +32,11 @@ class ToolExecutionResult:
             "tool": self.tool_name,
             "duration_ms": round(self.duration_ms, 2)
         }
+        if self.requires_confirmation:
+            data["requires_confirmation"] = True
+            data["confirmation_data"] = self.confirmation_data
+            data["message"] = self.confirmation_data.get("message") if self.confirmation_data else "User confirmation required."
+
         if self.success:
             data["result"] = self.result
         else:
@@ -38,7 +45,7 @@ class ToolExecutionResult:
 
 
 class ToolExecutor:
-    """Executes validated and permitted tools with safety boundaries and error containment."""
+    """Executes validated and permitted tools with safety boundaries, confirmation, and error containment."""
 
     def __init__(
         self,
@@ -53,7 +60,7 @@ class ToolExecutor:
         Executes a tool through the full safety pipeline:
         1. Tool Existence Check
         2. Argument Validation
-        3. Permission Policy Check
+        3. Permission Policy Check (Read-only vs Moderate Write vs Destructive)
         4. Isolated Execution with Timing
         """
         if arguments is None:
@@ -92,11 +99,17 @@ class ToolExecutor:
             )
 
         # Step 3: Permission Check
+        is_confirmed = bool(arguments.get("confirmed", False))
         is_allowed, perm_reason = self.permission_policy.is_tool_allowed(
             tool_name=tool_name,
-            permission_level=tool_def.permission_level
+            permission_level=tool_def.permission_level,
+            is_confirmed=is_confirmed
         )
-        if not is_allowed:
+
+        # If it's a moderate write tool and not confirmed, let the handler execute to build confirmation payload
+        if not is_allowed and tool_def.permission_level == PermissionLevel.MODERATE_WRITE:
+            pass # We will let the handler return its requires_confirmation payload
+        elif not is_allowed:
             duration_ms = (time.perf_counter() - start_time) * 1000
             err_msg = f"Permission denied for tool '{tool_name}': {perm_reason}"
             logger.warning("Tool execution denied: %s", err_msg)
@@ -112,8 +125,19 @@ class ToolExecutor:
             handler_result = tool_def.handler(**arguments)
             duration_ms = (time.perf_counter() - start_time) * 1000
 
-            # If the handler returned a dictionary with "success" and "result"
-            if isinstance(handler_result, dict) and "success" in handler_result:
+            # If the handler returned a dictionary
+            if isinstance(handler_result, dict):
+                # Check for confirmation requirement
+                if handler_result.get("requires_confirmation"):
+                    return ToolExecutionResult(
+                        success=False,
+                        tool_name=tool_name,
+                        requires_confirmation=True,
+                        confirmation_data=handler_result,
+                        error=handler_result.get("message", "User confirmation required."),
+                        duration_ms=duration_ms
+                    )
+
                 is_success = handler_result.get("success", True)
                 result_val = handler_result.get("result")
                 error_val = handler_result.get("error")

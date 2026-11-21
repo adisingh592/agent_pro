@@ -27,7 +27,12 @@ class ToolPermissionPolicy:
             "get_gpu_info"
         }
 
-    def is_tool_allowed(self, tool_name: str, permission_level: PermissionLevel) -> tuple[bool, str]:
+    def is_tool_allowed(
+        self,
+        tool_name: str,
+        permission_level: PermissionLevel,
+        is_confirmed: bool = False
+    ) -> tuple[bool, str]:
         """
         Check if a tool is permitted to execute.
         Returns: (is_allowed, reason)
@@ -35,14 +40,21 @@ class ToolPermissionPolicy:
         if not self.allow_auto_execution:
             return False, "Automated tool execution is disabled in settings."
 
-        if permission_level == PermissionLevel.SAFE_READ_ONLY:
-            return True, "Safe read-only tool auto-approved."
+        if permission_level in (PermissionLevel.SAFE_READ_ONLY, PermissionLevel.SAFE_ACTION):
+            return True, "Safe tool auto-approved."
 
         if tool_name in self._auto_approved_tools:
             return True, f"Tool '{tool_name}' is in auto-approved safe list."
 
-        if permission_level in (PermissionLevel.MODERATE_WRITE, PermissionLevel.DESTRUCTIVE):
-            return False, f"Tool '{tool_name}' requires explicit user confirmation (destructive/write level)."
+        if permission_level == PermissionLevel.MODERATE_WRITE:
+            if is_confirmed:
+                return True, "Moderate write operation approved by user confirmation."
+            return False, f"Tool '{tool_name}' requires explicit user confirmation (moderate write level)."
+
+        if permission_level == PermissionLevel.DESTRUCTIVE:
+            if is_confirmed:
+                return True, "Destructive operation explicitly approved by user."
+            return False, f"Tool '{tool_name}' requires explicit user confirmation (destructive level)."
 
         return True, "Tool approved under current security policy."
 

@@ -1,6 +1,6 @@
 """
-Agent core orchestrator with background worker for non-blocking local LLM streaming
-and multi-turn tool calling engine (Phase 2.2.1).
+Agent core orchestrator with background worker for non-blocking local LLM streaming,
+multi-turn tool calling engine, and interactive confirmation system (Phase 2.2.2).
 Manages conversation history, system prompt, execution states, tools, and SQLite persistence.
 """
 import json
@@ -26,19 +26,32 @@ logger = logging.getLogger("PersonalAgent.AgentCore")
 SYSTEM_PROMPT = (
     "You are Personal Agent, a capable and professional desktop AI assistant running locally on the user's computer.\n\n"
     "Available Tools:\n"
-    "You have access to safe, built-in system tools:\n"
+    "1. System Inspection:\n"
     "- 'get_current_time': Returns the current system date and time.\n"
     "- 'get_system_info': Returns host OS, Windows version, computer name, CPU info, total/available RAM, and CPU usage.\n"
     "- 'get_gpu_info': Returns NVIDIA GPU name, utilization, VRAM usage/capacity, and temperature.\n\n"
+    "2. File & Directory Intelligence (Read-Only):\n"
+    "- 'search_files(directory, pattern, recursive)': Search for files matching wildcards (*.py, *report*).\n"
+    "- 'list_directory(directory, include_hidden)': List files and subfolders with size and modified dates.\n"
+    "- 'get_file_info(path)': Inspect file/folder metadata, size, created/modified dates.\n"
+    "- 'read_text_file(path, max_characters)': Read code/text files safely (TXT, PY, JS, HTML, JSON, MD, etc.).\n"
+    "- 'find_recent_files(directory, days, recursive)': Find files modified in the past N days.\n"
+    "- 'find_large_files(directory, minimum_size_mb, recursive)': Find large files sorted largest first.\n"
+    "- 'organize_files_preview(directory)': Generate a proposed file organization plan sorted by file type.\n\n"
+    "3. File Operations (Requires User Confirmation):\n"
+    "- 'copy_file(source, destination)': Copy a file to another location (verified).\n"
+    "- 'move_file(source, destination)': Move a file to another location (verified).\n"
+    "- 'rename_file(path, new_name)': Rename a file or folder (verified).\n"
+    "- 'create_directory(path)': Create a new folder (verified).\n"
+    "- 'organize_files(directory)': Move files into categorized subfolders based on extension (verified).\n\n"
     "Tool Usage Rules:\n"
-    "- When the user asks for the current time, date, or day, you MUST call 'get_current_time'.\n"
-    "- When the user asks about computer specifications, hardware specs, RAM, CPU, or Windows version, you MUST call 'get_system_info'.\n"
-    "- When the user asks about their GPU, graphics card, VRAM, or GPU temperature, you MUST call 'get_gpu_info'.\n"
-    "- For general questions that do not require real-time system metrics (e.g. coding help, advice, planning), answer directly without invoking tools.\n"
+    "- For file queries (listing files, finding recent/large files, reading code), ALWAYS use the appropriate file tool.\n"
+    "- When asked to copy, move, rename, or organize files, invoke the corresponding tool. The system will prompt the user for confirmation.\n"
+    "- For general questions that do not require real-time system metrics or file operations, answer directly.\n"
     "- After receiving tool results, provide a clear, concise, and helpful natural-language summary. Do not output raw JSON unless specifically requested.\n\n"
     "General Guidelines:\n"
     "- Be concise, direct, and practical.\n"
-    "- If a request is ambiguous or lacks essential details, ask clarifying questions.\n"
+    "- If a request is ambiguous or lacks essential details (such as a target folder), ask clarifying questions.\n"
     "- Never pretend to have executed actions, changed files, launched apps, or accessed websites that you have not actually performed.\n"
     "- Clearly distinguish between planning a task and executing a task."
 )
@@ -56,6 +69,7 @@ class OllamaChatWorker(QThread):
     cancelled = Signal()
     tool_started = Signal(str, dict)                     # tool_name, arguments
     tool_completed = Signal(str, dict, float, bool)      # tool_name, result_dict, duration_ms, success
+    confirmation_requested = Signal(dict)                # confirmation payload for UI
 
     def __init__(
         self,
@@ -230,13 +244,21 @@ class OllamaChatWorker(QThread):
                     exec_result = self.tool_executor.execute(tool_name, args)
                     result_dict = exec_result.to_dict()
 
+                    # Check if operation requires user confirmation (e.g. copy, move, rename, delete)
+                    if exec_result.requires_confirmation:
+                        conf_data = exec_result.confirmation_data or {}
+                        conf_data["tool"] = tool_name
+                        conf_data["arguments"] = args
+                        self.confirmation_requested.emit(conf_data)
+
                     # Save to database
                     try:
+                        status_str = "pending_confirmation" if exec_result.requires_confirmation else ("success" if exec_result.success else "error")
                         db_manager.save_tool_execution(
                             tool_name=tool_name,
                             arguments=args,
                             result=result_dict,
-                            status="success" if exec_result.success else "error",
+                            status=status_str,
                             duration_ms=exec_result.duration_ms,
                             conversation_id=self.conversation_id
                         )
@@ -295,7 +317,7 @@ class OllamaChatWorker(QThread):
 
         patterns = [
             r'```(?:json)?\s*(\{\s*"name"\s*:\s*"[^"]+".*?\})\s*```',
-            r'(\{\s*"name"\s*:\s*"(?:get_current_time|get_system_info|get_gpu_info)"\s*,\s*"arguments"\s*:\s*\{.*?\}\s*\})',
+            r'(\{\s*"name"\s*:\s*"[a-zA-Z0-9_]+"\s*,\s*"arguments"\s*:\s*\{.*?\}\s*\})',
             r'<tool_call>\s*(\{\s*"name"\s*:\s*"[^"]+".*?\})\s*</tool_call>'
         ]
 
@@ -324,7 +346,7 @@ class OllamaChatWorker(QThread):
 class AgentCore(QObject):
     """
     Central Agent coordinator for the desktop application.
-    Orchestrates Ollama interaction, streaming worker threads, tool engine, and UI signals.
+    Orchestrates Ollama interaction, streaming worker threads, tool engine, confirmation flow, and UI signals.
     """
     status_changed = Signal(str)           # "Ready", "Thinking...", "Streaming...", "Idle"
     current_task_changed = Signal(str, str) # title, detail
@@ -337,6 +359,7 @@ class AgentCore(QObject):
     stream_error = Signal(str)             # error message
     tool_call_started = Signal(str, dict)  # tool_name, arguments
     tool_call_finished = Signal(str, dict, float, bool) # tool_name, result, duration_ms, success
+    confirmation_requested = Signal(dict)  # confirmation card payload
 
     def __init__(
         self,
@@ -357,7 +380,7 @@ class AgentCore(QObject):
             "Application started",
             "Workspace initialized",
             "Ollama integration active",
-            "Tool Engine initialized (3 safe tools ready)"
+            "File Intelligence & Tool Engine active"
         ]
 
         # Multi-turn conversation context for LLM
@@ -485,6 +508,7 @@ class AgentCore(QObject):
         self._current_worker.cancelled.connect(self._on_worker_cancelled)
         self._current_worker.tool_started.connect(self._on_worker_tool_started)
         self._current_worker.tool_completed.connect(self._on_worker_tool_completed)
+        self._current_worker.confirmation_requested.connect(self.confirmation_requested.emit)
         self._current_worker.start()
 
     def _on_worker_chunk(self, chunk: str) -> None:
@@ -494,17 +518,49 @@ class AgentCore(QObject):
         display_name = tool_name.replace("_", " ").title()
         self.set_status("Working")
         self.set_execution_state(f"Using tool: {display_name}")
-        self.set_current_task(f"Tool: {display_name}", "Executing system tool")
-        self.log_activity(f"🔧 Using tool: {display_name}")
+        self.set_current_task(f"Tool: {display_name}", "Executing tool")
+        self.log_activity(f"🔧 Tool: {display_name}")
         self.tool_call_started.emit(tool_name, arguments)
 
     def _on_worker_tool_completed(self, tool_name: str, result: dict, duration_ms: float, success: bool) -> None:
         display_name = tool_name.replace("_", " ").title()
         if success:
-            self.log_activity(f"✓ {display_name} retrieved ({duration_ms:.1f}ms)")
+            self.log_activity(f"✓ {display_name} verified ({duration_ms:.1f}ms)")
+        elif result.get("requires_confirmation"):
+            self.log_activity(f"⏳ {display_name}: Awaiting confirmation")
         else:
             self.log_activity(f"✗ {display_name} failed: {result.get('error', 'Error')}")
         self.tool_call_finished.emit(tool_name, result, duration_ms, success)
+
+    def execute_confirmed_tool(self, tool_name: str, arguments: dict) -> Dict[str, Any]:
+        """
+        Executes a user-approved tool operation (with confirmed=True) and audits the verified result.
+        """
+        args_with_conf = dict(arguments)
+        args_with_conf["confirmed"] = True
+
+        display_name = tool_name.replace("_", " ").title()
+        self.set_status("Working")
+        self.set_execution_state(f"Executing: {display_name}")
+        self.log_activity(f"✓ Approved: {display_name}")
+
+        self.tool_call_started.emit(tool_name, args_with_conf)
+        res = self.tool_executor.execute(tool_name, args_with_conf)
+        res_dict = res.to_dict()
+
+        # Save to database
+        db_manager.save_tool_execution(
+            tool_name=tool_name,
+            arguments=args_with_conf,
+            result=res_dict,
+            status="confirmed_success" if res.success else "confirmed_error",
+            duration_ms=res.duration_ms
+        )
+
+        self.tool_call_finished.emit(tool_name, res_dict, res.duration_ms, res.success)
+        self.set_status("Ready")
+        self.set_execution_state("Idle")
+        return res_dict
 
     def _on_worker_finished(self, full_text: str, stats: dict) -> None:
         # Save assistant message to DB
