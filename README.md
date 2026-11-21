@@ -594,11 +594,14 @@ PersonalAgent/
 │   │   ├── __init__.py          # Package initialization & tool registration
 │   │   ├── tool_registry.py     # ToolRegistry & ToolDefinition schemas
 │   │   ├── tool_validator.py    # ToolValidator schema and type enforcement
-│   │   ├── tool_permissions.py  # ToolPermissionPolicy & PermissionLevel
+│   │   ├── tool_permissions.py  # ToolPermissionPolicy & PermissionLevel (includes ControlledAction & ProcessModification)
 │   │   ├── tool_executor.py     # ToolExecutor with timing, confirmation & safety
 │   │   ├── built_in_tools.py    # System tools: get_current_time, get_system_info, get_gpu_info
 │   │   ├── filesystem_safety.py # FilesystemSafety: system folder blocking & traversal checks
-│   │   └── file_tools.py        # 12 file intelligence, modification & organization tools
+│   │   ├── file_tools.py        # 12 file intelligence, modification & organization tools
+│   │   ├── app_discovery.py     # Multi-source app discovery (App Paths, Start Menu, Uninstall, PATH) & resolver
+│   │   ├── process_manager.py   # Safe psutil process inspection, status check & graceful termination
+│   │   └── app_tools.py         # 9 application and process control tools
 │   │
 │   ├── automation/              # Staged for workflow automation
 │   ├── memory/
@@ -608,11 +611,12 @@ PersonalAgent/
 │
 ├── data/                        # Persistent SQLite database (`agent_database.sqlite`)
 ├── logs/                        # Standard logging output (`personal_agent.log`)
-├── tests/                       # Automated test suites (22 / 22 Tests Passing)
-│   ├── test_app.py              # Phase 1 UI, navigation, and resize verification
-│   ├── test_phase2.py           # Phase 2.1 Ollama, streaming, GPU benchmark suite
-│   ├── test_phase2_2_1.py       # Phase 2.2.1 Tool registry, validator, executor, and agent loop
-│   ├── test_phase2_2_2.py       # Phase 2.2.2 Filesystem safety, file tools & organization
+├── tests/                       # Automated test suites (41 / 41 Tests Passing — 100%)
+│   ├── test_app.py              # Phase 1 UI, navigation, and resize verification (6/6)
+│   ├── test_phase2.py           # Phase 2.1 Ollama, streaming, GPU benchmark suite (5/5)
+│   ├── test_phase2_2_1.py       # Phase 2.2.1 Tool registry, validator, executor, and agent loop (6/6)
+│   ├── test_phase2_2_2.py       # Phase 2.2.2 Filesystem safety, file tools & organization (5/5)
+│   ├── test_phase2_2_3.py       # Phase 2.2.3 App discovery, launch, process tools & safety (19/19)
 │   └── screenshots/             # Rendered test screenshots matching UI reference
 ├── ui images/                   # Provided UI reference screenshots
 └── README.md                    # Project documentation & progress report
@@ -636,7 +640,7 @@ CREATE TABLE IF NOT EXISTS messages (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tool execution audit log (Phase 2.2.1 & 2.2.2)
+-- Tool execution audit log (Phase 2.2.1, 2.2.2 & 2.2.3)
 CREATE TABLE IF NOT EXISTS tool_executions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     conversation_id TEXT DEFAULT 'default',
