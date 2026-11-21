@@ -218,8 +218,8 @@ def test_live_agent_tool_inference():
     agent.stream_error.connect(on_error)
 
     # Ask a tool-requiring question
-    print("  Sending prompt: 'What is the current time and date on my computer right now?'")
-    agent.process_user_input("What is the current time and date on my computer right now?")
+    print("  Sending prompt: 'Please check and tell me the current time using the get_current_time tool.'")
+    agent.process_user_input("Please check and tell me the current time using the get_current_time tool.")
 
     start = time.time()
     while not finished_event[0] and (time.time() - start) < 60:

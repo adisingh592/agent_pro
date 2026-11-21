@@ -76,9 +76,23 @@ def handle_click_ui_element(
     element_name: str,
     control_type: Optional[str] = None,
     automation_id: Optional[str] = None,
-    match_index: int = 0
+    match_index: int = 0,
+    confirmed: bool = False
 ) -> Dict[str, Any]:
     """Click or invoke a UI element in the specified window."""
+    if not confirmed:
+        return {
+            "success": False,
+            "requires_confirmation": True,
+            "tool": "click_ui_element",
+            "title": "UI Action Confirmation Required",
+            "action": "Click UI Element",
+            "window": window_title,
+            "element": element_name,
+            "risk": "Will click/invoke interactive control in target window.",
+            "message": f"User confirmation required to click '{element_name}' in window '{window_title}'."
+        }
+
     res = windows_automation.click_ui_element(
         window_title=window_title,
         element_name=element_name,
@@ -94,9 +108,24 @@ def handle_type_into_ui_element(
     element_name: str,
     text: str,
     automation_id: Optional[str] = None,
-    match_index: int = 0
+    match_index: int = 0,
+    confirmed: bool = False
 ) -> Dict[str, Any]:
     """Enter text into an editable UI control."""
+    if not confirmed:
+        return {
+            "success": False,
+            "requires_confirmation": True,
+            "tool": "type_into_ui_element",
+            "title": "Text Input Confirmation Required",
+            "action": "Type into Element",
+            "window": window_title,
+            "element": element_name,
+            "text": text,
+            "risk": "Will input text into selected desktop control.",
+            "message": f"User confirmation required to enter text into '{element_name}' in '{window_title}'."
+        }
+
     res = windows_automation.type_into_ui_element(
         window_title=window_title,
         element_name=element_name,
@@ -140,13 +169,29 @@ def handle_focus_window(
 def handle_press_key(
     window_title: str,
     key: str,
-    approved_key_combination: Optional[str] = None
+    approved_key_combination: Optional[str] = None,
+    confirmed: bool = False
 ) -> Dict[str, Any]:
     """Send an approved key or shortcut combination to the target window."""
+    key_norm = key.strip().lower()
+    from ..automation.action_executor import SENSITIVE_KEYS
+    if key_norm in SENSITIVE_KEYS and not confirmed and not approved_key_combination:
+        return {
+            "success": False,
+            "requires_confirmation": True,
+            "tool": "press_key",
+            "title": "Key Combination Confirmation Required",
+            "action": "Press Key",
+            "window": window_title,
+            "key": key,
+            "risk": f"Will dispatch sensitive key shortcut '{key}' to active window.",
+            "message": f"User confirmation required to dispatch key '{key}' to '{window_title}'."
+        }
+
     res = windows_automation.press_key(
         window_title=window_title,
         key=key,
-        approved_key_combination=approved_key_combination
+        approved_key_combination=approved_key_combination or ("confirmed" if confirmed else None)
     )
     return res.to_dict()
 
@@ -289,6 +334,10 @@ def register_ui_automation_tools(registry: ToolRegistry) -> None:
                 "match_index": {
                     "type": "integer",
                     "description": "Zero-based match index if multiple elements share the same name (default: 0)."
+                },
+                "confirmed": {
+                    "type": "boolean",
+                    "description": "User approval confirmation flag."
                 }
             },
             "required": ["window_title", "element_name"]
@@ -324,6 +373,10 @@ def register_ui_automation_tools(registry: ToolRegistry) -> None:
                 "match_index": {
                     "type": "integer",
                     "description": "Zero-based match index if multiple text fields match (default: 0)."
+                },
+                "confirmed": {
+                    "type": "boolean",
+                    "description": "User approval confirmation flag."
                 }
             },
             "required": ["window_title", "element_name", "text"]
@@ -409,6 +462,10 @@ def register_ui_automation_tools(registry: ToolRegistry) -> None:
                 "approved_key_combination": {
                     "type": "string",
                     "description": "Confirmation indicator for sensitive keys like 'Alt+F4' or 'Ctrl+W'."
+                },
+                "confirmed": {
+                    "type": "boolean",
+                    "description": "User approval confirmation flag."
                 }
             },
             "required": ["window_title", "key"]

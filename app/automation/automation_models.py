@@ -108,6 +108,7 @@ class AutomationResult:
         }
         if self.data is not None:
             res["data"] = self.data
+            res["result"] = self.data
         if self.error is not None:
             res["error"] = self.error
         if self.verification is not None:

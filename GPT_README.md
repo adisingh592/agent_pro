@@ -46,7 +46,8 @@ The project is currently evolving from a conversational assistant with file and 
 [Phase 2.2.2]   ████████████████████ 100% Complete (File Intelligence & Safe Ops)
 [Phase 2.2.3]   ████████████████████ 100% Complete (App & Process Control)
 [Milestone A]   ████████████████████ 100% Complete (Computer Automation Architecture & Safety)
-[Milestones B-I]░░░░░░░░░░░░░░░░░░░░   0% Staged (Awaiting User Review to begin Milestone B)
+[Phase 2.3]     ████████████████████ 100% Complete (Windows UI Automation Engine)
+[Milestones C-I]░░░░░░░░░░░░░░░░░░░░   0% Staged (Awaiting User Review to begin Milestone C)
 ```
 
 ### Detailed Breakdown of Completed Phases
@@ -141,6 +142,30 @@ The project is currently evolving from a conversational assistant with file and 
   - `docs/SAFETY_MODEL.md`: 4-tier security taxonomy (`READ_ONLY`, `CONTROLLED`, `APPROVAL_REQUIRED`, `RESTRICTED`), window & path scoping, emergency abort (`Ctrl+Alt+X`, corner slam), SQLite audit schema.
   - `docs/AUTONOMOUS_TASK_EXECUTION.md`: Observe-Ground-Act-Verify (OGAV) ReAct loop, dynamic `TaskPlanner`, deterministic state assertions, loop bounds (max 25 steps, 10s action timeout, stall guard), skill replay memory.
 
+#### ✅ Phase 2.3 / Milestone B: Windows UI Automation Engine
+- **Dedicated Automation Subsystem** (`app/automation/`):
+  - `window_manager.py`: Enumerates windows via `win32gui`/`ctypes`, tracks active foreground window, restores minimized windows, activates focus.
+  - `element_inspector.py`: Bounded UIA tree traversal (depth & count caps), property extraction, generates compact LLM observation format.
+  - `element_finder.py`: Multi-tier matching (exact ID, exact name, substring, fuzzy) with ambiguity detection.
+  - `action_executor.py`: Invokes native patterns (`InvokePattern`, `ValuePattern`, `TogglePattern`, `SelectionItemPattern`), bounding center fallback, password masking (`********`), key allowlists.
+  - `windows_automation.py`: High-level automation coordinator.
+- **9 New Tools Registered in `ToolRegistry`**:
+  - `list_windows`: Open desktop window enumeration with PID, visibility, and state.
+  - `get_active_window`: Current foreground window inspection.
+  - `inspect_window`: Window UIA tree inspection with compact observation layer.
+  - `find_ui_element`: Search for buttons, text fields, and menus by label or ID.
+  - `click_ui_element`: Click/invoke interactive controls using native patterns (requires confirmation).
+  - `type_into_ui_element`: Enter text via `ValuePattern.SetValue` (requires confirmation).
+  - `read_ui_element`: Read text or values with automatic password masking.
+  - `focus_window`: Bring target window to the foreground.
+  - `press_key`: Send approved keyboard shortcuts (`Escape`, `Tab`, `Ctrl+S`, etc.) with key allowlist guards.
+- **Safety Invariants**:
+  - Read-only tools are auto-approved under `ToolPermissionPolicy`.
+  - Mutating operations (`click_ui_element`, `type_into_ui_element`, `press_key`) are staged for explicit user confirmation cards in chat.
+  - Key allowlist: strictly blocks unvalidated keys; flags sensitive keys (`Alt+F4`, `Enter`, `Ctrl+W`).
+  - Disabled element protection: rejects clicking disabled controls.
+- **Test Suite**: `tests/test_phase2_3_windows_ui_automation.py` (20 / 20 PASSED — 100%).
+
 ---
 
 ## 4. Complete Project Directory Structure
@@ -149,9 +174,38 @@ The project is currently evolving from a conversational assistant with file and 
 h:\pro agent\
 ├── app/
 │   ├── __init__.py
+│   ├── automation/
+│   │   ├── __init__.py
+│   │   ├── action_executor.py     # Native pattern invocation, click, type, keypress
+│   │   ├── automation_models.py   # WindowInfo, UIElementInfo, AutomationResult
+│   │   ├── element_finder.py      # Control matching (exact, substring, fuzzy, ambiguity)
+│   │   ├── element_inspector.py   # UIA tree inspection & compact observations
+│   │   ├── window_manager.py      # Window enumeration, active window, focus
+│   │   └── windows_automation.py  # Unified Windows automation engine coordinator
 │   ├── core/
 │   │   ├── __init__.py
 │   │   ├── agent.py               # Main AgentCore & OllamaChatWorker (QThread)
+│   │   ├── model_manager.py       # Ollama discovery, health & model parameters
+│   │   ├── ollama_client.py       # Low-level HTTP client for Ollama API
+│   │   └── task_manager.py        # Task queuing and execution state
+│   ├── database/
+│   │   ├── __init__.py
+│   │   └── database.py            # SQLite schema initialization & repository methods
+│   ├── tools/
+│   │   ├── __init__.py
+│   │   ├── app_discovery.py       # Registry & Start Menu application scanner (cached)
+│   │   ├── app_resolver.py        # Natural language alias & fuzzy resolver
+│   │   ├── app_tools.py           # Phase 2.2.3 application & process control tools
+│   │   ├── built_in_tools.py      # Time, system info, GPU info tools
+│   │   ├── file_security.py       # Phase 2.2.2 filesystem boundary enforcer
+│   │   ├── file_tools.py          # Phase 2.2.2 file search, read, copy, move, organize
+│   │   ├── process_manager.py     # psutil process listing, status & graceful termination
+│   │   ├── tool_executor.py       # 5-stage execution runner with timeout & timing
+│   │   ├── tool_permissions.py    # Permission policies & confirmation requirements
+│   │   ├── tool_registry.py       # In-memory tool registration catalog
+│   │   ├── tool_validator.py      # JSON Schema argument validation
+│   │   └── ui_automation_tools.py # Phase 2.3 Windows UI Automation tool handlers
+│   └── ui/
 │   │   ├── model_manager.py       # Ollama discovery, health & model parameters
 │   │   ├── ollama_client.py       # Low-level HTTP client for Ollama API
 │   │   └── task_manager.py        # Task queuing and execution state
@@ -207,7 +261,8 @@ h:\pro agent\
 │   ├── test_phase2.py             # Phase 2.1 Ollama & GPU benchmark tests (5/5 pass)
 │   ├── test_phase2_2_1.py         # Phase 2.2.1 Tool engine unit tests (6/6 pass)
 │   ├── test_phase2_2_2.py         # Phase 2.2.2 File intelligence tests (5/5 pass)
-│   └── test_phase2_2_3.py         # Phase 2.2.3 App & process control tests (19/19 pass)
+│   ├── test_phase2_2_3.py         # Phase 2.2.3 App & process control tests (19/19 pass)
+│   └── test_phase2_3_windows_ui_automation.py # Phase 2.3 Windows UI Automation tests (20/20 pass)
 ├── main.py                        # Application entry point
 ├── run_agent.bat                  # Windows launch script
 ├── README.md                      # Primary repository documentation
@@ -281,27 +336,30 @@ To be added during Milestones F through H:
 
 ---
 
-## 6. Automated Test Baseline (41 / 41 Tests Passing — 100%)
+## 6. Automated Test Baseline (61 / 61 Tests Passing — 100%)
 
 All features are covered by automated unit and integration tests. **Never commit changes that break any of these tests.**
 
 ```bash
-# 1. Phase 2.2.3 Application & Process Control (19 tests)
-python tests/test_phase2_2_3.py   --> 19 / 19 PASSED (OK in ~43s)
+# 1. Phase 2.3 Windows UI Automation (20 tests)
+python tests/test_phase2_3_windows_ui_automation.py --> 20 / 20 PASSED (OK)
 
-# 2. Phase 2.2.2 File Intelligence & Operations (5 tests)
+# 2. Phase 2.2.3 Application & Process Control (19 tests)
+python tests/test_phase2_2_3.py   --> 19 / 19 PASSED (OK in ~22s)
+
+# 3. Phase 2.2.2 File Intelligence & Operations (5 tests)
 python tests/test_phase2_2_2.py   --> 5 / 5 PASSED (OK)
 
-# 3. Phase 2.2.1 Agent Tool Engine (6 tests)
+# 4. Phase 2.2.1 Agent Tool Engine (6 tests)
 python tests/test_phase2_2_1.py   --> 6 / 6 PASSED (OK)
 
-# 4. Phase 2.1 Hardware, GPU & Model Streaming (5 tests)
+# 5. Phase 2.1 Hardware, GPU & Model Streaming (5 tests)
 python tests/test_phase2.py       --> 5 / 5 PASSED (OK)
 
-# 5. Phase 1 Desktop UI Navigation & Layout (6 tests)
+# 6. Phase 1 Desktop UI Navigation & Layout (6 tests)
 python tests/test_app.py          --> 6 / 6 PASSED (OK)
 
-TOTAL: 41 / 41 TESTS PASSING (100% SUCCESS RATE)
+TOTAL: 61 / 61 TESTS PASSING (100% SUCCESS RATE)
 ```
 
 ---

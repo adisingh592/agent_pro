@@ -6,10 +6,10 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 
 ---
 
-## 📌 Project Status: Milestone A Complete (Autonomous Computer Control Engine)
+## 📌 Project Status: Phase 2.3 Complete (Windows UI Automation Engine)
 
-> **Current Milestone**: Milestone A — Reference Repository Analysis & Computer Automation Architecture (Complete)  
-> **Prior Completed Phases**: Phase 1 (UI Foundation), Phase 2.1 (Local AI & GPU), Phase 2.2.1 (Tool Engine), Phase 2.2.2 (File Operations), Phase 2.2.3 (App & Process Control)  
+> **Current Milestone**: Phase 2.3 / Milestone B — Windows UI Automation Engine (Complete & 100% Verified)  
+> **Prior Completed Phases**: Phase 1 (UI Foundation), Phase 2.1 (Local AI & GPU), Phase 2.2.1 (Tool Engine), Phase 2.2.2 (File Operations), Phase 2.2.3 (App & Process Control), Milestone A (Architecture & Safety Design)  
 > **Target Hardware**: NVIDIA GeForce RTX 3050 Laptop GPU (6GB VRAM) / Intel Core i7-13650HX / 32GB RAM / Windows 11  
 > **Model**: `qwen3:8b` (5.2 GB GGUF, Q4_K_M) via Ollama (`llamacpp` CUDA v12 runner)  
 > **Repository**: [https://github.com/adisingh592/agent_pro.git](https://github.com/adisingh592/agent_pro.git)  
@@ -19,12 +19,16 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 ## 📑 Table of Contents
 
 1. [Project Completion & Progress Tracker](#-project-completion--progress-tracker)
-2. [Autonomous Computer Automation Engine (Milestones A—I)](#-autonomous-computer-automation-engine-milestones-a-i)
-   - [Reference Repository Analysis](#1-reference-repository-analysis)
-   - [Unified 5-Level Hybrid Architecture](#2-unified-5-level-hybrid-architecture)
-   - [4-Tier Safety & Control Model](#3-4-tier-safety--control-model)
-   - [Autonomous ReAct Task Execution & Skill Replay](#4-autonomous-react-task-execution--skill-replay)
-3. [Phase 2.2.3 — Application & Process Control](#-phase-223--application--process-control)
+2. [Phase 2.3 — Windows UI Automation Engine](#-phase-23--windows-ui-automation-engine)
+   - [Technology Selection & Architecture](#1-technology-selection--architecture)
+   - [Desktop Window Discovery & Management](#2-desktop-window-discovery--management)
+   - [UI Element Inspection & Compact Observations](#3-ui-element-inspection--compact-observations)
+   - [Intelligent Element Finding & Ambiguity Handling](#4-intelligent-element-finding--ambiguity-handling)
+   - [Native Pattern Actions (Click, Type, Read, Keypress)](#5-native-pattern-actions-click-type-read-keypress)
+   - [Security, Key Allowlists & Confirmation Staging](#6-security-key-allowlists--confirmation-staging)
+   - [Full Automated Test Verification Suite](#7-full-automated-test-verification-suite)
+3. [Autonomous Computer Automation Engine (Milestones A—I)](#-autonomous-computer-automation-engine-milestones-a-i)
+4. [Phase 2.2.3 — Application & Process Control](#-phase-223--application--process-control)
    - [Application Discovery & Registry Cache](#1-application-discovery--registry-cache)
    - [Natural Language Application Name Resolution](#2-natural-language-application-name-resolution)
    - [Read-Only Application & Process Tools](#3-read-only-application--process-tools)
@@ -60,8 +64,8 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 | **Phase 2.2.2: File Operations** | File search, list, metadata, text reading, recent/large files, verified copy/move/rename/mkdir, interactive confirmation UI, smart organization. | ✅ Complete | **100%** |
 | **Phase 2.2.3: App & Process Control** | Multi-source app discovery, natural language resolver, safe process inspection, controlled launch, graceful close, critical process guard. | ✅ Complete | **100%** |
 | **Milestone A: Architecture & Safety** | Reference analysis of WindowsAgent, UI-TARS, AutoGUI; 5-level hybrid architecture; 4-tier safety model; ReAct execution specs. | ✅ Complete | **100%** |
-| **Milestone B: Windows UI Automation** | Accessibility tree inspection, UI element detection, native control pattern invocation without relying on screen coordinates. | ⏳ Staged (Next) | **0%** |
-| **Milestone C: Desktop Actions & Grounding** | Coordinate normalization [0, 1000], DPI scaling, mouse/keyboard primitives with PyAutoGUI failsafes and window boundaries. | ⏳ Staged | **0%** |
+| **Phase 2.3 / Milestone B: Windows UI Automation** | Desktop window discovery, accessibility tree inspection, element finding, native pattern invocation (Invoke/Value/Toggle), key allowlists, confirmation staging. | ✅ Complete | **100%** |
+| **Milestone C: Desktop Actions & Grounding** | Coordinate normalization [0, 1000], DPI scaling, mouse/keyboard primitives with PyAutoGUI failsafes and window boundaries. | ⏳ Staged (Next) | **0%** |
 | **Milestone D: Browser Automation Backend** | Playwright / Chrome DevTools Protocol integration, semantic DOM locators, network idle detection, form automation. | ⏳ Staged | **0%** |
 | **Milestone E: Visual & OCR Fallback Engine** | Configurable lightweight/remote VLM interface, Windows Media OCR / Tesseract fallback for canvas/Direct3D applications. | ⏳ Staged | **0%** |
 | **Milestone F: Autonomous Task Execution Engine**| Closed-loop Observe-Ground-Act-Verify ReAct loop, dynamic TaskPlanner, deterministic state assertions, stall detection. | ⏳ Staged | **0%** |
@@ -76,7 +80,76 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 [Phase 2.2.2]   ████████████████████ 100% Complete
 [Phase 2.2.3]   ████████████████████ 100% Complete
 [Milestone A]   ████████████████████ 100% Complete (Architectural Specification Ready)
-[Milestones B-I]░░░░░░░░░░░░░░░░░░░░   0% Staged (Awaiting User Review & Approval)
+[Phase 2.3]     ████████████████████ 100% Complete (Windows UI Automation Engine)
+[Milestones C-I]░░░░░░░░░░░░░░░░░░░░   0% Staged (Awaiting User Review & Approval)
+```
+
+---
+
+## 🪟 Phase 2.3 — Windows UI Automation Engine
+
+Personal Agent is equipped with a high-reliability **Windows UI Automation Engine** built with `uiautomation` and `pywin32`. This enables the agent to understand and interact with Windows desktop applications through their native accessible UI controls, rather than relying on brittle pixel coordinates.
+
+### 1. Technology Selection & Architecture
+- **Primary Backend**: `uiautomation>=2.0.29` (native Microsoft UI Automation COM interface) + `pywin32>=312` (`win32gui`, `win32process`, `win32con`).
+- **Core Architecture** (`app/automation/`):
+  - `automation_models.py`: Data models (`WindowInfo`, `UIElementInfo`, `ElementMatch`, `AutomationResult`).
+  - `window_manager.py`: High-performance window enumeration, PID/process extraction, active window tracking, foreground activation with minimize restoration.
+  - `element_inspector.py`: Bounded tree traversals (configurable `maximum_depth` and `maximum_elements`), property extraction, and token-efficient compact observation layer.
+  - `element_finder.py`: Intelligent multi-tier control matching (exact AutomationId, exact name, case-insensitive, substring, fuzzy) with ambiguity detection.
+  - `action_executor.py`: Native pattern actions (`InvokePattern`, `ValuePattern`, `TogglePattern`, `SelectionItemPattern`), bounding center fallback, password masking, and keyboard allowlists.
+  - `windows_automation.py`: Unified automation engine coordinator.
+  - `app/tools/ui_automation_tools.py`: Tool wrappers and registration with `ToolRegistry`.
+
+### 2. Available UI Automation Tools (9 New Tools)
+
+| Tool Name | Parameters | Permission Level | Description |
+| :--- | :--- | :---: | :--- |
+| `list_windows` | `visible_only`, `maximum_results` | `SAFE_READ_ONLY` (Auto) | List open desktop windows with title, PID, visibility, and minimized/maximized state. |
+| `get_active_window` | *(none)* | `SAFE_READ_ONLY` (Auto) | Return title, PID, process name, and bounds of the foreground window. |
+| `inspect_window` | `window_title`, `maximum_depth`, `maximum_elements` | `SAFE_READ_ONLY` (Auto) | Traverse accessibility tree of target window and produce a compact summary. |
+| `find_ui_element` | `window_title`, `element_name`, `control_type`, `automation_id` | `SAFE_READ_ONLY` (Auto) | Search for buttons, text boxes, and menus in a window by label or ID with ambiguity alerts. |
+| `click_ui_element` | `window_title`, `element_name`, `control_type`, `automation_id`, `match_index` | `CONTROLLED_ACTION` (Staged) | Click or invoke interactive UI controls using native patterns. Staged for user confirmation. |
+| `type_into_ui_element`| `window_title`, `element_name`, `text`, `automation_id`, `match_index` | `CONTROLLED_ACTION` (Staged) | Enter text into text inputs via `ValuePattern.SetValue` or keystrokes. Staged for confirmation. |
+| `read_ui_element` | `window_title`, `element_name`, `control_type`, `automation_id` | `SAFE_READ_ONLY` (Auto) | Read text or value of a control. Automatically masks passwords and sensitive tokens (`********`). |
+| `focus_window` | `window_title`, `process_name`, `process_id` | `CONTROLLED_ACTION` (Auto) | Restore if minimized and bring target window to the foreground. |
+| `press_key` | `window_title`, `key`, `approved_key_combination` | `CONTROLLED_ACTION` (Policy) | Send approved keyboard shortcuts. Sensitive shortcuts (`Alt+F4`, `Enter`) require confirmation. |
+
+### 3. Keyboard Allowlist & Safety Invariants
+- **Safe Keys (Approved)**: `Escape`, `Tab`, `Space`, `Backspace`, `Delete`, `Up`, `Down`, `Left`, `Right`, `Home`, `End`, `PageUp`, `PageDown`, `F1`–`F12`, `Ctrl+A`, `Ctrl+C`, `Ctrl+V`, `Ctrl+X`, `Ctrl+Z`, `Ctrl+Y`, `Ctrl+S`, `Ctrl+F`.
+- **Sensitive Keys (Confirmation Required)**: `Enter`, `Return`, `Alt+F4`, `Ctrl+W`, `Ctrl+Shift+Esc`.
+- **Arbitrary Key Blocking**: Random strings or unvalidated keys are strictly rejected with `KEY_NOT_ALLOWED`.
+- **Disabled Element Protection**: Elements reporting `IsEnabled: False` cannot be clicked or typed into.
+- **Ambiguity Guard**: When a query matches multiple elements with similar confidence, the tool halts and lists candidates rather than guessing.
+
+### 4. Automated Test Verification (20 / 20 Tests Passed — 100%)
+```bash
+python tests/test_phase2_3_windows_ui_automation.py
+```
+**Test Results**:
+```text
+test_action_executor_disabled_element_protection ... ok
+test_click_ui_element_requires_confirmation_in_executor ... ok
+test_compact_observation_generation ... ok
+test_controlled_action_requires_confirmation ... ok
+test_element_matching_logic_mocked ... ok
+test_find_element_in_nonexistent_window ... ok
+test_find_window_exact_and_substring ... ok
+test_find_window_nonexistent_returns_none ... ok
+test_get_active_window ... ok
+test_get_active_window_executor_execution ... ok
+test_inspect_window_nonexistent ... ok
+test_key_allowlist_enforcement ... ok
+test_list_windows_executor_execution ... ok
+test_list_windows_respects_max_results ... ok
+test_list_windows_returns_structured_data ... ok
+test_phase2_3_tools_registered ... ok
+test_press_key_requires_confirmation_in_executor ... ok
+test_read_element_sensitive_masking ... ok
+test_read_only_automation_tools_auto_approved ... ok
+test_safe_keys_recognized ... ok
+----------------------------------------------------------------------
+Ran 20 tests in 0.002s - OK (100% Passing)
 ```
 
 ---

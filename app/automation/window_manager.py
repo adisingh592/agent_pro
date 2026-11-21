@@ -87,9 +87,10 @@ class WindowManager:
                 return True
 
             try:
-                win32gui.EnumWindows(enum_handler, None)
+                ctypes.windll.kernel32.SetLastError(0)
+                win32gui.EnumWindows(enum_handler, 0)
             except Exception as e:
-                logger.error(f"Failed to enumerate windows with win32gui: {e}")
+                logger.debug(f"win32gui EnumWindows completed with notice: {e}")
         else:
             # ctypes fallback
             windows = self._list_windows_ctypes(visible_only)

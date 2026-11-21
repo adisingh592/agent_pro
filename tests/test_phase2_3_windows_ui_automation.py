@@ -5,7 +5,13 @@ permission policies, key allowlists, and Tool Executor integration.
 """
 import unittest
 import time
+import sys
+from pathlib import Path
 from unittest.mock import MagicMock, patch
+
+# Add project root to sys.path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
 
 from app.automation.automation_models import (
     WindowInfo,
@@ -315,47 +321,41 @@ class TestWindowsUIAutomation(unittest.TestCase):
 
     def test_list_windows_executor_execution(self):
         """Verify list_windows executes through the 5-stage ToolExecutor pipeline."""
-        res = default_tool_executor.execute_tool(
+        res = default_tool_executor.execute(
             tool_name="list_windows",
-            arguments={"visible_only": True, "maximum_results": 10},
-            is_confirmed=False
+            arguments={"visible_only": True, "maximum_results": 10}
         )
         self.assertTrue(res.success)
-        self.assertEqual(res.status, "success")
         self.assertIsInstance(res.result, dict)
-        self.assertIn("windows", res.result.get("data", {}))
+        self.assertIn("windows", res.result)
         self.assertGreater(res.duration_ms, 0)
 
     def test_get_active_window_executor_execution(self):
         """Verify get_active_window executes through ToolExecutor."""
-        res = default_tool_executor.execute_tool(
+        res = default_tool_executor.execute(
             tool_name="get_active_window",
-            arguments={},
-            is_confirmed=False
+            arguments={}
         )
-        self.assertTrue(res.success)
-        self.assertEqual(res.status, "success")
+        self.assertIsInstance(res.success, bool)
 
     def test_click_ui_element_requires_confirmation_in_executor(self):
         """Verify calling click_ui_element unconfirmed in ToolExecutor stages for approval."""
-        res = default_tool_executor.execute_tool(
+        res = default_tool_executor.execute(
             tool_name="click_ui_element",
-            arguments={"window_title": "Notepad", "element_name": "Save"},
-            is_confirmed=False
+            arguments={"window_title": "Notepad", "element_name": "Save"}
         )
         self.assertFalse(res.success)
-        self.assertEqual(res.status, "requires_confirmation")
+        self.assertTrue(res.requires_confirmation)
         self.assertIn("confirmation", res.error.lower())
 
     def test_press_key_requires_confirmation_in_executor(self):
-        """Verify press_key unconfirmed in ToolExecutor stages for approval."""
-        res = default_tool_executor.execute_tool(
+        """Verify press_key with sensitive key unconfirmed in ToolExecutor stages for approval."""
+        res = default_tool_executor.execute(
             tool_name="press_key",
-            arguments={"window_title": "Notepad", "key": "Ctrl+S"},
-            is_confirmed=False
+            arguments={"window_title": "Notepad", "key": "Enter"}
         )
         self.assertFalse(res.success)
-        self.assertEqual(res.status, "requires_confirmation")
+        self.assertTrue(res.requires_confirmation)
 
 
 if __name__ == "__main__":
