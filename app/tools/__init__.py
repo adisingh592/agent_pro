@@ -47,6 +47,18 @@ from .app_tools import (
     get_process_info,
     close_application
 )
+from .ui_automation_tools import (
+    register_ui_automation_tools,
+    handle_list_windows,
+    handle_get_active_window,
+    handle_inspect_window,
+    handle_find_ui_element,
+    handle_click_ui_element,
+    handle_type_into_ui_element,
+    handle_read_ui_element,
+    handle_focus_window,
+    handle_press_key
+)
 
 # Register built-in system tools
 register_built_in_tools(default_tool_registry)
@@ -56,6 +68,9 @@ register_file_tools(default_tool_registry)
 
 # Register Phase 2.2.3 application & process control tools
 register_app_tools(default_tool_registry)
+
+# Register Phase 2.3 Windows UI Automation tools
+register_ui_automation_tools(default_tool_registry)
 
 __all__ = [
     "PermissionLevel",
@@ -102,5 +117,15 @@ __all__ = [
     "list_running_processes",
     "check_application_status",
     "get_process_info",
-    "close_application"
+    "close_application",
+    "register_ui_automation_tools",
+    "handle_list_windows",
+    "handle_get_active_window",
+    "handle_inspect_window",
+    "handle_find_ui_element",
+    "handle_click_ui_element",
+    "handle_type_into_ui_element",
+    "handle_read_ui_element",
+    "handle_focus_window",
+    "handle_press_key"
 ]

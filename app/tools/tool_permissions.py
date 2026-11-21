@@ -31,7 +31,14 @@ class ToolPermissionPolicy:
             "list_installed_applications",
             "list_running_processes",
             "check_application_status",
-            "get_process_info"
+            "get_process_info",
+            # Windows UI Automation Read-Only Tools
+            "list_windows",
+            "get_active_window",
+            "inspect_window",
+            "find_ui_element",
+            "read_ui_element",
+            "focus_window"
         }
 
     def is_tool_allowed(
