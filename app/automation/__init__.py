@@ -13,6 +13,18 @@ from .element_inspector import ElementInspector, element_inspector
 from .element_finder import ElementFinder, element_finder
 from .action_executor import ActionExecutor, action_executor
 from .windows_automation import WindowsAutomationEngine, windows_automation
+from .actions import (
+    Coordinate,
+    NormalizedCoordinate,
+    ScreenMetrics,
+    DesktopActionResult,
+    CoordinateMapper,
+    coordinate_mapper,
+    EmergencyStopController,
+    emergency_stop,
+    InputSimulator,
+    input_simulator
+)
 
 __all__ = [
     "WindowInfo",
@@ -28,5 +40,15 @@ __all__ = [
     "ActionExecutor",
     "action_executor",
     "WindowsAutomationEngine",
-    "windows_automation"
+    "windows_automation",
+    "Coordinate",
+    "NormalizedCoordinate",
+    "ScreenMetrics",
+    "DesktopActionResult",
+    "CoordinateMapper",
+    "coordinate_mapper",
+    "EmergencyStopController",
+    "emergency_stop",
+    "InputSimulator",
+    "input_simulator"
 ]

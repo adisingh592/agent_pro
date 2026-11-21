@@ -59,6 +59,20 @@ from .ui_automation_tools import (
     handle_focus_window,
     handle_press_key
 )
+from .desktop_action_tools import (
+    register_desktop_action_tools,
+    handle_get_screen_metrics,
+    handle_move_mouse,
+    handle_click_at,
+    handle_double_click_at,
+    handle_right_click_at,
+    handle_drag_mouse,
+    handle_scroll_at,
+    handle_type_desktop_text,
+    handle_press_desktop_key,
+    handle_trigger_emergency_stop,
+    handle_reset_emergency_stop
+)
 
 # Register built-in system tools
 register_built_in_tools(default_tool_registry)
@@ -71,6 +85,9 @@ register_app_tools(default_tool_registry)
 
 # Register Phase 2.3 Windows UI Automation tools
 register_ui_automation_tools(default_tool_registry)
+
+# Register Milestone C Desktop Actions & Coordinate Grounding tools
+register_desktop_action_tools(default_tool_registry)
 
 __all__ = [
     "PermissionLevel",
@@ -127,5 +144,17 @@ __all__ = [
     "handle_type_into_ui_element",
     "handle_read_ui_element",
     "handle_focus_window",
-    "handle_press_key"
+    "handle_press_key",
+    "register_desktop_action_tools",
+    "handle_get_screen_metrics",
+    "handle_move_mouse",
+    "handle_click_at",
+    "handle_double_click_at",
+    "handle_right_click_at",
+    "handle_drag_mouse",
+    "handle_scroll_at",
+    "handle_type_desktop_text",
+    "handle_press_desktop_key",
+    "handle_trigger_emergency_stop",
+    "handle_reset_emergency_stop"
 ]

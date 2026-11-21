@@ -6,10 +6,10 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 
 ---
 
-## 📌 Project Status: Phase 2.3 Complete (Windows UI Automation Engine)
+## 📌 Project Status: Milestone C Complete (Desktop Actions & Coordinate Grounding)
 
-> **Current Milestone**: Phase 2.3 / Milestone B — Windows UI Automation Engine (Complete & 100% Verified)  
-> **Prior Completed Phases**: Phase 1 (UI Foundation), Phase 2.1 (Local AI & GPU), Phase 2.2.1 (Tool Engine), Phase 2.2.2 (File Operations), Phase 2.2.3 (App & Process Control), Milestone A (Architecture & Safety Design)  
+> **Current Milestone**: Milestone C — Desktop Actions & Coordinate Grounding (Complete & 100% Verified)  
+> **Prior Completed Phases**: Phase 1 (UI Foundation), Phase 2.1 (Local AI & GPU), Phase 2.2.1 (Tool Engine), Phase 2.2.2 (File Operations), Phase 2.2.3 (App & Process Control), Milestone A (Architecture & Safety Design), Phase 2.3 / Milestone B (Windows UI Automation Engine)  
 > **Target Hardware**: NVIDIA GeForce RTX 3050 Laptop GPU (6GB VRAM) / Intel Core i7-13650HX / 32GB RAM / Windows 11  
 > **Model**: `qwen3:8b` (5.2 GB GGUF, Q4_K_M) via Ollama (`llamacpp` CUDA v12 runner)  
 > **Repository**: [https://github.com/adisingh592/agent_pro.git](https://github.com/adisingh592/agent_pro.git)  
@@ -19,7 +19,13 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 ## 📑 Table of Contents
 
 1. [Project Completion & Progress Tracker](#-project-completion--progress-tracker)
-2. [Phase 2.3 — Windows UI Automation Engine](#-phase-23--windows-ui-automation-engine)
+2. [Milestone C — Desktop Actions & Coordinate Grounding](#-milestone-c--desktop-actions--coordinate-grounding)
+   - [Normalized Coordinate Grounding & DPI Mapping](#1-normalized-coordinate-grounding--dpi-mapping)
+   - [Physical Input Simulation & Win32 Integration](#2-physical-input-simulation--win32-integration)
+   - [Global Emergency Stop Circuit Breaker](#3-global-emergency-stop-circuit-breaker)
+   - [Safety Confirmation Barriers & Keyboard Allowlists](#4-safety-confirmation-barriers--keyboard-allowlists)
+   - [Automated Verification Tests](#5-automated-verification-tests)
+3. [Phase 2.3 — Windows UI Automation Engine](#-phase-23--windows-ui-automation-engine)
    - [Technology Selection & Architecture](#1-technology-selection--architecture)
    - [Desktop Window Discovery & Management](#2-desktop-window-discovery--management)
    - [UI Element Inspection & Compact Observations](#3-ui-element-inspection--compact-observations)
@@ -27,28 +33,17 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
    - [Native Pattern Actions (Click, Type, Read, Keypress)](#5-native-pattern-actions-click-type-read-keypress)
    - [Security, Key Allowlists & Confirmation Staging](#6-security-key-allowlists--confirmation-staging)
    - [Full Automated Test Verification Suite](#7-full-automated-test-verification-suite)
-3. [Autonomous Computer Automation Engine (Milestones A—I)](#-autonomous-computer-automation-engine-milestones-a-i)
-4. [Phase 2.2.3 — Application & Process Control](#-phase-223--application--process-control)
-   - [Application Discovery & Registry Cache](#1-application-discovery--registry-cache)
-   - [Natural Language Application Name Resolution](#2-natural-language-application-name-resolution)
-   - [Read-Only Application & Process Tools](#3-read-only-application--process-tools)
-   - [Controlled Application Launching & File Associations](#4-controlled-application-launching--file-associations)
-   - [Safe Process Management & Graceful Termination](#5-safe-process-management--graceful-termination)
-   - [Security Restrictions & Critical Process Protection](#6-security-restrictions--critical-process-protection)
-4. [Phase 2.2.2 — File Intelligence & Safe File Operations](#-phase-222--file-intelligence--safe-file-operations)
-   - [Filesystem Safety Architecture & Boundaries](#1-filesystem-safety-architecture--boundaries)
-   - [Read-Only File Tools](#2-read-only-file-tools)
-   - [Controlled Modification Tools & Verification](#3-controlled-modification-tools--verification)
-   - [Interactive Confirmation System](#4-interactive-confirmation-system)
-   - [Smart File Organization Workflow](#5-smart-file-organization-workflow)
-5. [Phase 2.2.1 — Agent Tool Engine](#-phase-221--agent-tool-engine)
-6. [Phase 2.1 — Local AI Integration & NVIDIA GPU Acceleration](#-phase-21--local-ai-integration--nvidia-gpu-acceleration)
-7. [Application Layout & Pages](#-application-layout--pages)
-8. [Project Structure](#-project-structure)
-9. [Database Schema](#-database-schema)
-10. [Getting Started & Installation](#-getting-started--installation)
-11. [Verification & Benchmark Tests](#-verification--benchmark-tests)
-12. [Roadmap Ahead](#-roadmap-ahead)
+4. [Autonomous Computer Automation Engine (Milestones A—I)](#-autonomous-computer-automation-engine-milestones-a-i)
+5. [Phase 2.2.3 — Application & Process Control](#-phase-223--application--process-control)
+6. [Phase 2.2.2 — File Intelligence & Safe File Operations](#-phase-222--file-intelligence--safe-file-operations)
+7. [Phase 2.2.1 — Agent Tool Engine](#-phase-221--agent-tool-engine)
+8. [Phase 2.1 — Local AI Integration & NVIDIA GPU Acceleration](#-phase-21--local-ai-integration--nvidia-gpu-acceleration)
+9. [Application Layout & Pages](#-application-layout--pages)
+10. [Project Structure](#-project-structure)
+11. [Database Schema](#-database-schema)
+12. [Getting Started & Installation](#-getting-started--installation)
+13. [Verification & Benchmark Tests](#-verification--benchmark-tests)
+14. [Roadmap Ahead](#-roadmap-ahead)
 
 ---
 
@@ -65,8 +60,8 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 | **Phase 2.2.3: App & Process Control** | Multi-source app discovery, natural language resolver, safe process inspection, controlled launch, graceful close, critical process guard. | ✅ Complete | **100%** |
 | **Milestone A: Architecture & Safety** | Reference analysis of WindowsAgent, UI-TARS, AutoGUI; 5-level hybrid architecture; 4-tier safety model; ReAct execution specs. | ✅ Complete | **100%** |
 | **Phase 2.3 / Milestone B: Windows UI Automation** | Desktop window discovery, accessibility tree inspection, element finding, native pattern invocation (Invoke/Value/Toggle), key allowlists, confirmation staging. | ✅ Complete | **100%** |
-| **Milestone C: Desktop Actions & Grounding** | Coordinate normalization [0, 1000], DPI scaling, mouse/keyboard primitives with PyAutoGUI failsafes and window boundaries. | ⏳ Staged (Next) | **0%** |
-| **Milestone D: Browser Automation Backend** | Playwright / Chrome DevTools Protocol integration, semantic DOM locators, network idle detection, form automation. | ⏳ Staged | **0%** |
+| **Milestone C: Desktop Actions & Grounding** | Normalized coordinate mapping [0, 1000], DPI scaling, virtual screen multi-monitor geometry, physical mouse/keyboard simulation, corner slam failsafe, 11 tools. | ✅ Complete | **100%** |
+| **Milestone D: Browser Automation Backend** | Playwright / Chrome DevTools Protocol integration, semantic DOM locators, network idle detection, form automation. | ⏳ Staged (Next) | **0%** |
 | **Milestone E: Visual & OCR Fallback Engine** | Configurable lightweight/remote VLM interface, Windows Media OCR / Tesseract fallback for canvas/Direct3D applications. | ⏳ Staged | **0%** |
 | **Milestone F: Autonomous Task Execution Engine**| Closed-loop Observe-Ground-Act-Verify ReAct loop, dynamic TaskPlanner, deterministic state assertions, stall detection. | ⏳ Staged | **0%** |
 | **Milestone G: Safety, Scoping & Human Oversight**| 4-tier security enforcer, application scoping, dry-run simulation mode, emergency abort (Ctrl+Alt+X), SQLite action audit logging.| ⏳ Staged | **0%** |
@@ -81,8 +76,48 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 [Phase 2.2.3]   ████████████████████ 100% Complete
 [Milestone A]   ████████████████████ 100% Complete (Architectural Specification Ready)
 [Phase 2.3]     ████████████████████ 100% Complete (Windows UI Automation Engine)
-[Milestones C-I]░░░░░░░░░░░░░░░░░░░░   0% Staged (Awaiting User Review & Approval)
+[Milestone C]   ████████████████████ 100% Complete (Desktop Actions & Coordinate Grounding)
+[Milestones D-I]░░░░░░░░░░░░░░░░░░░░   0% Staged (Awaiting User Review & Approval)
 ```
+
+---
+
+## 🖱️ Milestone C — Desktop Actions & Coordinate Grounding
+
+Personal Agent provides physical desktop mouse and keyboard interaction capabilities grounded in a standardized coordinate space. When target applications do not expose accessible UI Automation controls (e.g., custom rendering canvases, games, legacy apps), the agent can interact reliably via physical input simulation with comprehensive safety boundaries.
+
+### 1. Normalized Coordinate Grounding & DPI Mapping
+- **Normalized Scale `[0, 1000]`**: All coordinates exchanged with the LLM are expressed on a resolution-independent `[0, 1000]` grid, where `(0, 0)` is top-left and `(1000, 1000)` is bottom-right.
+- **Multi-Monitor Virtual Screen Geometry**: Automatically detects primary resolution, virtual desktop offsets (`SM_XVIRTUALSCREEN`, `SM_YVIRTUALSCREEN`), and multi-monitor span (`SM_CXVIRTUALSCREEN`, `SM_CYVIRTUALSCREEN`).
+- **DPI Scaling Support**: Reads system DPI via Win32 `GetDpiForSystem()` and scales coordinate conversions automatically.
+- **Window-Relative Mapping**: When a `window_title` is provided, coordinates map relative to that window's bounding box rectangle rather than the entire desktop.
+
+### 2. Physical Input Simulation & Win32 Integration
+- **Mouse Primitives**:
+  - `move_mouse(x, y, normalized, window_title)`: Smooth cursor movement.
+  - `click_at(x, y, button, normalized, window_title)`: Left, right, and middle clicks with verified cursor position.
+  - `double_click_at(x, y, normalized, window_title)`: Rapid double-click sequence.
+  - `right_click_at(x, y, normalized, window_title)`: Context menu activation.
+  - `drag_mouse(start_x, start_y, end_x, end_y, duration_ms, normalized, window_title)`: Click-and-drag with synthetic movement interpolation.
+  - `scroll_at(wheel_units, horizontal, x, y, normalized, window_title)`: Vertical and horizontal mouse wheel scrolling.
+- **Keyboard Primitives**:
+  - `type_desktop_text(text, window_title, delay_per_char)`: Simulates real typing with configurable per-character delay (`delay_per_char=0.01s`). Does NOT automatically press Enter. Text is masked in logs for privacy.
+  - `press_desktop_key(key, window_title, approved_key_combination)`: Dispatches safe functional keys (`Tab`, `Escape`, `Enter`, `F1-F12`, arrow keys) and shortcuts (`Ctrl+C`, `Ctrl+V`, `Ctrl+S`).
+
+### 3. Global Emergency Stop Circuit Breaker
+- **Failsafe Corner Slam**: Moving or dragging the cursor into the extreme top-left corner `(0, 0)` or `<= 5px` immediately trips the global emergency stop circuit breaker.
+- **Hardware Button & Modifier Release**: On trigger, dispatches synthetic `LEFTUP`, `RIGHTUP`, `MIDDLEUP`, and `Shift`/`Ctrl`/`Alt`/`Win` key releases to eliminate sticky key states.
+- **Latching Action Rejection**: Once tripped, all subsequent physical actions are rejected with `EMERGENCY_STOP_ACTIVE`.
+- **Deliberate Reset Barrier**: Requires explicit call to `reset_emergency_stop` confirmed by the user.
+
+### 4. Safety Confirmation Barriers & Keyboard Allowlists
+- **Tier 3 Human-in-the-Loop Confirmation**: All mutating desktop actions require user confirmation before execution.
+- **Auto-Approved Telemetry**: `get_screen_metrics` and `trigger_emergency_stop` are auto-approved for zero-friction safety.
+- **Allowlist Filtering**: Keys outside `SAFE_KEYS` and `SENSITIVE_KEYS` are rejected with `KEY_NOT_ALLOWED`.
+
+### 5. Automated Verification Tests
+- **23 dedicated tests** in `tests/test_milestone_c_desktop_actions.py` covering coordinate mapping, DPI scaling, mouse moves, clicks, typing, key combinations, emergency stop, and confirmation staging.
+- **All 23 tests pass in 0.006s** using mocks (zero disruption to the user's active desktop during testing).
 
 ---
 

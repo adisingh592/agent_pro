@@ -47,7 +47,8 @@ The project is currently evolving from a conversational assistant with file and 
 [Phase 2.2.3]   ████████████████████ 100% Complete (App & Process Control)
 [Milestone A]   ████████████████████ 100% Complete (Computer Automation Architecture & Safety)
 [Phase 2.3]     ████████████████████ 100% Complete (Windows UI Automation Engine)
-[Milestones C-I]░░░░░░░░░░░░░░░░░░░░   0% Staged (Awaiting User Review to begin Milestone C)
+[Milestone C]   ████████████████████ 100% Complete (Desktop Actions & Coordinate Grounding)
+[Milestones D-I]░░░░░░░░░░░░░░░░░░░░   0% Staged (Awaiting User Review to begin Milestone D)
 ```
 
 ### Detailed Breakdown of Completed Phases
@@ -166,6 +167,26 @@ The project is currently evolving from a conversational assistant with file and 
   - Disabled element protection: rejects clicking disabled controls.
 - **Test Suite**: `tests/test_phase2_3_windows_ui_automation.py` (20 / 20 PASSED — 100%).
 
+#### ✅ Milestone C: Desktop Actions & Coordinate Grounding
+- **Dedicated Actions Module** (`app/automation/actions/`):
+  - `action_models.py`: Schemas for `Coordinate`, `NormalizedCoordinate`, `ScreenMetrics`, `DesktopActionResult`.
+  - `coordinate_mapper.py`: Bidirectional conversion between normalized `[0, 1000]` coordinates and physical pixels, DPI scaling detection (`GetDpiForSystem()`), virtual screen geometry (`SM_XVIRTUALSCREEN`, `SM_CXVIRTUALSCREEN`), bounds clamping, and window-relative mapping.
+  - `emergency_stop.py`: Global automation circuit breaker with latching stop flag, failsafe top-left corner slam `(0, 0)` detection, automatic release of held mouse buttons (`LEFTUP`, `RIGHTUP`, `MIDDLEUP`) and modifier keys (`Ctrl`, `Alt`, `Shift`, `Win`), and deliberate reset barrier.
+  - `input_simulator.py`: Physical mouse movements, clicks (left, right, middle), double-clicks, dragging with duration interpolation, vertical/horizontal scrolling, text typing with delay (no auto-Enter), key combinations (`Ctrl+C`, `Ctrl+V`, `Ctrl+S`), window scoping, and allowlists (`SAFE_KEYS`, `SENSITIVE_KEYS`).
+- **11 New Tools Registered in `ToolRegistry`**:
+  - `get_screen_metrics`: Resolution, multi-monitor bounds, DPI scaling, and cursor position (auto-approved).
+  - `move_mouse`: Move mouse cursor to coordinates (normalized [0, 1000] by default, staged for confirmation).
+  - `click_at`: Click at screen coordinates (left, right, middle, staged for confirmation).
+  - `double_click_at`: Double-click at screen coordinates (staged for confirmation).
+  - `right_click_at`: Right-click at screen coordinates (staged for confirmation).
+  - `drag_mouse`: Drag between coordinates with duration in ms (staged for confirmation).
+  - `scroll_at`: Scroll mouse wheel at coordinates (vertical or horizontal, staged for confirmation).
+  - `type_desktop_text`: Type text into window without auto-Enter (staged for confirmation).
+  - `press_desktop_key`: Dispatch approved keys or shortcuts with allowlist checks (staged for confirmation).
+  - `trigger_emergency_stop`: Instant circuit breaker halting all physical actions (auto-approved).
+  - `reset_emergency_stop`: Deliberate reset of emergency stop state (requires confirmation).
+- **Test Suite**: `tests/test_milestone_c_desktop_actions.py` (23 / 23 PASSED — 100%).
+
 ---
 
 ## 4. Complete Project Directory Structure
@@ -181,7 +202,13 @@ h:\pro agent\
 │   │   ├── element_finder.py      # Control matching (exact, substring, fuzzy, ambiguity)
 │   │   ├── element_inspector.py   # UIA tree inspection & compact observations
 │   │   ├── window_manager.py      # Window enumeration, active window, focus
-│   │   └── windows_automation.py  # Unified Windows automation engine coordinator
+│   │   ├── windows_automation.py  # Unified Windows automation engine coordinator
+│   │   └── actions/               # Milestone C Desktop Actions & Coordinate Grounding
+│   │       ├── __init__.py
+│   │       ├── action_models.py       # Coordinate, NormalizedCoordinate, ScreenMetrics
+│   │       ├── coordinate_mapper.py   # Normalized [0, 1000] mapping & DPI scaling
+│   │       ├── emergency_stop.py      # Circuit breaker & corner slam (0,0) failsafe
+│   │       └── input_simulator.py     # Physical mouse/keyboard simulation via Win32
 │   ├── core/
 │   │   ├── __init__.py
 │   │   ├── agent.py               # Main AgentCore & OllamaChatWorker (QThread)
@@ -197,6 +224,7 @@ h:\pro agent\
 │   │   ├── app_resolver.py        # Natural language alias & fuzzy resolver
 │   │   ├── app_tools.py           # Phase 2.2.3 application & process control tools
 │   │   ├── built_in_tools.py      # Time, system info, GPU info tools
+│   │   ├── desktop_action_tools.py# Milestone C Desktop Actions (11 tools)
 │   │   ├── file_security.py       # Phase 2.2.2 filesystem boundary enforcer
 │   │   ├── file_tools.py          # Phase 2.2.2 file search, read, copy, move, organize
 │   │   ├── process_manager.py     # psutil process listing, status & graceful termination

@@ -289,3 +289,27 @@ Prior to writing parameters to `action_audit_log` or feeding state back to the L
 | **Immediate Operator Preemption** | User can instantly regain physical control of mouse/keyboard. | Global hotkey hook, mouse corner slam, UI cancel button. |
 | **System File Immutability** | OS files and system registry keys can never be edited or deleted. | Tier 4 `RESTRICTED` hard rejection in `SafetyEnforcer`. |
 | **100% Auditability** | Every single action attempt is preserved locally with forensic detail. | SQLite `action_audit_log` table with timing and status. |
+
+---
+
+## 9. Milestone C: Desktop Physical Actions & Coordinate Grounding Safety Model
+
+Milestone C introduces controlled physical mouse and keyboard interaction. Because raw mouse clicks and keystrokes can affect any visible desktop element, strict physical safety boundaries are enforced:
+
+### 9.1 Coordinate Grounding & Multi-Monitor Virtual Geometry
+- **Normalized Scale [0, 1000]:** All agent-facing coordinates are specified on a canonical `[0, 1000]` scale, where `(0, 0)` is top-left and `(1000, 1000)` is bottom-right.
+- **DPI Scaling & Virtual Screen Bounds:** Coordinates are mapped via Win32 virtual screen metrics (`SM_XVIRTUALSCREEN`, `SM_YVIRTUALSCREEN`, `SM_CXVIRTUALSCREEN`, `SM_CYVIRTUALSCREEN`), correctly supporting multi-monitor configurations and per-monitor DPI scaling.
+- **Out-of-Bounds Rejection:** Any coordinate exceeding `[0, 1000]` or falling outside the physical desktop bounding box is rejected before input dispatch (`COORDINATES_OUT_OF_BOUNDS`).
+
+### 9.2 Physical Input Safety Barriers (Tier 3 Approval)
+- **Mandatory Confirmation Cards:** All mutating physical desktop actions (`move_mouse`, `click_at`, `double_click_at`, `right_click_at`, `drag_mouse`, `scroll_at`, `type_desktop_text`, `press_desktop_key`, `reset_emergency_stop`) require explicit user confirmation.
+- **Read-Only Auto-Approval:** Display telemetry (`get_screen_metrics`) and the emergency stop circuit breaker (`trigger_emergency_stop`) are auto-approved for zero-latency execution.
+- **No Auto-Enter Typing:** `type_desktop_text` simulates character typing with configurable delays (`delay_per_char`) without automatically appending newline/Enter.
+- **Keyboard Allowlists:** Keystrokes are filtered against strict `SAFE_KEYS` and `SENSITIVE_KEYS` allowlists. Unauthorized keys are rejected with `KEY_NOT_ALLOWED`.
+
+### 9.3 Global Emergency Stop Circuit Breaker
+- **Failsafe Corner Slam:** Dragging the mouse to the extreme top-left corner `(0, 0)` or `<= 5px` immediately trips the circuit breaker.
+- **Hardware Safety Release:** When tripped, synthetic `LEFTUP`, `RIGHTUP`, `MIDDLEUP`, `Ctrl`, `Alt`, `Shift`, and `Win` key releases are dispatched to prevent sticky input state.
+- **Latching Halt:** Once activated, all subsequent physical input requests are immediately rejected with error code `EMERGENCY_STOP_ACTIVE`.
+- **Deliberate Reset:** The circuit breaker cannot be cleared automatically; it requires an explicit `reset_emergency_stop` action with user confirmation.
+

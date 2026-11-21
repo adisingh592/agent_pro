@@ -38,7 +38,10 @@ class ToolPermissionPolicy:
             "inspect_window",
             "find_ui_element",
             "read_ui_element",
-            "focus_window"
+            "focus_window",
+            # Milestone C Desktop Action Safe Tools
+            "get_screen_metrics",
+            "trigger_emergency_stop"
         }
 
     def is_tool_allowed(
