@@ -1,16 +1,16 @@
 # Personal Agent — Desktop AI Assistant
 
-A high-performance personal desktop AI assistant built with **Python 3.12+**, **PySide6**, and an **SQLite-ready modular architecture**, powered by **local Ollama LLMs with NVIDIA GPU hardware acceleration**.
+A high-performance personal desktop AI assistant built with **Python 3.12+**, **PySide6**, and an **SQLite-ready modular architecture**, powered by **local Ollama LLMs with NVIDIA GPU hardware acceleration** and a **safe, extensible tool-calling execution engine**.
 
-Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agent provides a centralized, professional command center designed for speed, visual clarity, and future autonomous system capabilities.
+Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agent provides a centralized, professional command center designed for speed, visual clarity, and future autonomous desktop capabilities.
 
 ---
 
-## 📌 Project Status: Phase 2.1 (Complete & Verified)
+## 📌 Project Status: Phase 2.2.1 (Complete & Verified)
 
-> **Current Milestone**: Phase 2.1 — Local AI Integration, Ollama & NVIDIA GPU Acceleration  
+> **Current Milestone**: Phase 2.2.1 — Agent Tool Engine  
 > **Target Hardware**: NVIDIA GeForce RTX 3050 Laptop GPU (6GB VRAM) / Intel Core i7-13650HX / 32GB RAM / Windows 11  
-> **Model**: `qwen3:8b` (5.2 GB GGUF, Q4_K_M) running via Ollama (`llamacpp` CUDA v12 runner)  
+> **Model**: `qwen3:8b` (5.2 GB GGUF, Q4_K_M) via Ollama (`llamacpp` CUDA v12 runner)  
 > **Repository**: [https://github.com/adisingh592/agent_pro.git](https://github.com/adisingh592/agent_pro.git)  
 
 ---
@@ -18,19 +18,21 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 ## 📑 Table of Contents
 
 1. [Features Overview](#-features-overview)
-2. [Phase 2.1 — Local AI Integration & NVIDIA GPU Acceleration](#-phase-21--local-ai-integration--nvidia-gpu-acceleration)
-   - [Ollama Integration & Discovery](#1-ollama-integration--model-discovery)
-   - [GPU Acceleration Root Cause & Fix](#2-gpu-acceleration-diagnosis--resolution)
-   - [Non-Blocking Real-Time Streaming](#3-non-blocking-real-time-chat-streaming)
-   - [SQLite Chat History Persistence](#4-persistent-chat-history--sqlite-storage)
-   - [System Prompt & Assistant Persona](#5-system-prompt--agent-persona)
-   - [Hardware & Resource Monitoring](#6-live-gpu--system-resource-monitoring)
-3. [Application Layout & Pages](#-application-layout--pages)
-4. [Project Structure](#-project-structure)
-5. [Database Schema](#-database-schema)
-6. [Getting Started & Installation](#-getting-started--installation)
-7. [Verification & Benchmark Tests](#-verification--benchmark-tests)
-8. [Roadmap Ahead](#-roadmap-ahead)
+2. [Phase 2.2.1 — Agent Tool Engine](#-phase-221--agent-tool-engine)
+   - [Tool Execution Architecture & Flow Diagram](#1-tool-execution-architecture--flow-diagram)
+   - [Tool Registry & Extensibility](#2-tool-registry--extensibility)
+   - [Available Built-in Tools](#3-available-built-in-tools)
+   - [Permission System & Safety Policies](#4-permission-system--safety-policies)
+   - [Model Tool-Calling Mechanism & Fallback](#5-model-tool-calling-mechanism--structured-fallback)
+   - [UI Integration & Indicators](#6-ui-integration--indicators)
+   - [SQLite Tool Execution Persistence](#7-sqlite-tool-execution-persistence)
+3. [Phase 2.1 — Local AI Integration & NVIDIA GPU Acceleration](#-phase-21--local-ai-integration--nvidia-gpu-acceleration)
+4. [Application Layout & Pages](#-application-layout--pages)
+5. [Project Structure](#-project-structure)
+6. [Database Schema](#-database-schema)
+7. [Getting Started & Installation](#-getting-started--installation)
+8. [Verification & Benchmark Tests](#-verification--benchmark-tests)
+9. [Roadmap Ahead](#-roadmap-ahead)
 
 ---
 
@@ -44,10 +46,131 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 | **Local LLM Engine** | Direct integration with local Ollama service (`http://localhost:11434`) without external cloud dependencies. | ✅ Complete |
 | **NVIDIA GPU Offloading** | 70% GPU / 30% CPU hybrid layer distribution on RTX 3050 6GB; ~18.3–20.4 tokens/second generation speed. | ✅ Complete |
 | **Live Token Streaming** | Progressive text emission via asynchronous `QThread` worker; supports both reasoning `<think>` tokens and final content. | ✅ Complete |
-| **Instant Interruption** | Responsive "Stop Generating" (`⏹`) control that cancels network socket operations immediately. | ✅ Complete |
-| **Persistent Storage** | SQLite-backed database storing tasks, memories, activity history, and multi-turn chat messages. | ✅ Complete |
+| **Agent Tool Engine** | Safe, multi-round tool calling pipeline with JSON schema validation, permissions, and timeout containment. | ✅ Complete |
+| **Built-in System Tools** | Real-time system inspection: `get_current_time`, `get_system_info`, `get_gpu_info`. | ✅ Complete |
+| **Instant Interruption** | Responsive "Stop Generating" (`⏹`) control that cancels network socket operations and tool execution immediately. | ✅ Complete |
+| **Persistent Storage** | SQLite-backed database storing tasks, memories, activity history, chat messages, and tool executions. | ✅ Complete |
 | **Live Hardware Monitor** | Background polling of CPU %, RAM %, GPU utilization %, VRAM allocation, and GPU temperature. | ✅ Complete |
-| **Tool Calling & Execution** | Structured function execution (filesystem, process management, shell commands). | ⏳ Phase 2.2 |
+
+---
+
+## ⚡ Phase 2.2.1 — Agent Tool Engine
+
+Phase 2.2.1 introduces an extensible, secure tool execution engine into Personal Agent. Instead of operating as a purely conversational model, the agent can now determine when real-world system data is required, validate tool invocations, execute approved Python functions, and summarize the results in clear natural language.
+
+### 1. Tool Execution Architecture & Flow Diagram
+
+All tool requests flow through a strict 5-stage safety pipeline:
+
+```text
+       User Request
+            │
+            ▼
+        Agent Core
+            │
+            ▼
+        Qwen 3 8B
+            │
+            ▼
+      Tool Selection (Native Ollama API / Structured Fallback)
+            │
+            ▼
+      Tool Validation (Schema, Required Args, Types, Unexpected Keys)
+            │
+            ▼
+     Permission Check (Safe Read-Only vs Sensitive vs Destructive)
+            │
+            ▼
+      Tool Execution (Isolated Handler, Start/Stop Timers, Error Catching)
+            │
+            ▼
+       Tool Result (Structured JSON {success, tool, result, duration_ms})
+            │
+            ▼
+        Qwen 3 8B (Interprets Tool Results in Round 2)
+            │
+            ▼
+      Final Response (Clear Natural-Language Summary to User)
+```
+
+---
+
+### 2. Tool Registry & Extensibility
+
+The tool subsystem lives in `app/tools/` and consists of clean, decoupled components:
+- **`app/tools/tool_registry.py`**: Manages `ToolDefinition` instances (name, description, parameter schemas in JSON Schema format, callable handler, permission level, and category). Exposes `get_ollama_tools()` to translate definitions into the standard OpenAI/Ollama function format.
+- **`app/tools/tool_validator.py`**: Validates tool calls against schemas before execution. Rejects missing required parameters, invalid data types (e.g. string for integer, boolean for integer), and unexpected arguments.
+- **`app/tools/tool_permissions.py`**: Enforces execution safety levels (`SAFE_READ_ONLY`, `SAFE_ACTION`, `SENSITIVE_READ`, `MODERATE_WRITE`, `DESTRUCTIVE`). Determines whether tools execute automatically or require future confirmation dialogs.
+- **`app/tools/tool_executor.py`**: Coordinates validation, permission checks, execution isolation, and execution timing (`duration_ms`). Returns structured `ToolExecutionResult` objects and prevents tool exceptions from crashing the application.
+- **`app/tools/built_in_tools.py`**: Implements the initial suite of safe, read-only system tools.
+
+---
+
+### 3. Available Built-in Tools
+
+| Tool Name | Parameters | Description | Example Output |
+| :--- | :--- | :--- | :--- |
+| **`get_current_time`** | *None* | Returns the current local system date, time, and timestamp. | `{"result": "November 21, 2026, 01:27 PM"}` |
+| **`get_system_info`** | *None* | Returns non-sensitive host computer info: OS, Windows version, computer name, CPU model, core count, RAM capacity, available RAM, and CPU usage. | `{"result": {"os": "Windows 11", "cpu": "Intel64 Family 6...", "ram_total": "31.7 GB", "ram_available": "10.0 GB", "cpu_usage": "20.5%"}}` |
+| **`get_gpu_info`** | *None* | Queries `nvidia-smi` to return NVIDIA GPU model, utilization %, total VRAM, used VRAM, free VRAM, and GPU temperature. Safely handles missing drivers or non-NVIDIA environments. | `{"result": {"gpu_name": "NVIDIA GeForce RTX 3050 Laptop GPU", "gpu_utilization": "4%", "vram_total": "6144 MB", "vram_used": "5689 MB", "gpu_temperature": "59°C"}}` |
+
+---
+
+### 4. Permission System & Safety Policies
+
+To prevent untrusted code execution or unauthorized access:
+- **Execution Level Hierarchy**:
+  - `SAFE_READ_ONLY`: Automated read-only queries (system time, specs, GPU stats). Always auto-approved.
+  - `SAFE_ACTION`: Non-destructive actions (file reading, search).
+  - `MODERATE_WRITE`: Modifying files, creating folders (requires user confirmation in future phases).
+  - `DESTRUCTIVE`: Deleting files, killing processes, system alterations (strictly requires explicit user confirmation).
+- **Hard Boundaries**:
+  - Never executes arbitrary Python code generated by the LLM.
+  - Never runs arbitrary terminal shell commands in this phase.
+  - Tools must be explicitly registered in `ToolRegistry`; all unknown tools are immediately rejected.
+
+---
+
+### 5. Model Tool-Calling Mechanism & Structured Fallback
+
+1. **Native Ollama Tool Calling**: Personal Agent uses Ollama's native `/api/chat` function-calling protocol by passing `tools: [...]` alongside user messages.
+2. **Multi-Round Execution Loop**: `OllamaChatWorker` manages a loop with a **maximum limit of 5 rounds** per request to prevent infinite loops:
+   - Round 1: Prompt + Tools passed to Ollama. Model emits reasoning `<think>` tokens and requests tool call(s).
+   - Tool Execution: Tools are validated, permitted, executed, timed, and saved to SQLite.
+   - Round 2: Tool outputs are appended as `role: "tool"` messages and fed back into Qwen 3 8B.
+   - Final Answer: Model analyzes the output and streams the final natural-language response.
+3. **Structured JSON Fallback**: If Ollama or an alternative model emits a structured tool call in text instead of the API parameter (e.g. `{"name": "...", "arguments": {}}`), `_check_structured_tool_fallback` automatically parses and executes it.
+
+---
+
+### 6. UI Integration & Indicators
+
+- **Chat Activity Badges (`ToolActivityWidget`)**:
+  - Displays a clean visual card inside the chat stream when a tool is called.
+  - While running: `⚙ Running tool: Get System Info...` with an amber left border.
+  - Upon completion: `✓ Tool: Get System Info — Retrieved successfully (166.0 ms)` with a subtle green border.
+  - Upon error: `✗ Tool: ... — Failed: ...` with a subtle red border.
+- **Agent Panel & Status Bar**:
+  - Right Agent Panel updates execution state to `Using tool: Get System Info`.
+  - Activity log registers tool events in real time.
+
+---
+
+### 7. SQLite Tool Execution Persistence
+
+Stored in `data/agent_database.sqlite`:
+```sql
+CREATE TABLE IF NOT EXISTS tool_executions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    conversation_id TEXT DEFAULT 'default',
+    tool_name TEXT NOT NULL,
+    arguments TEXT,
+    result TEXT,
+    status TEXT NOT NULL,
+    duration_ms REAL DEFAULT 0.0,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 
 ---
 
@@ -55,11 +178,11 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 
 ### 1. Ollama Integration & Model Discovery
 - **Native Local API**: Directly communicates with the local Ollama daemon at `http://localhost:11434` using native standard library HTTP requests (`/api/tags`, `/api/chat`, `/api/ps`).
-- **Zero Redownload Enforcement**: Automatically discovers existing models on disk. Connects directly to the installed model:
+- **Existing Model Detection**: Automatically queries installed models without re-downloading or reinstalling. Detects and auto-selects:
   ```text
   qwen3:8b (Tag ID: 500a1f067a9f, Size: 5.2 GB disk / 5.7 GB in memory)
   ```
-- **Dynamic Model Switching**: Model selector dropdown in the Chat header with an instant refresh button (`↻`) to pick from any locally installed Ollama models.
+- **Dynamic Model Switching**: Model selector dropdown in the Chat header with an instant refresh button (`↻`).
 
 ---
 
@@ -90,62 +213,11 @@ NAME        ID              SIZE      PROCESSOR                UNTIL
 qwen3:8b    500a1f067a9f    5.7 GB    70%/30% GPU/CPU          4m55s
 ```
 
-```text
-+-----------------------------------------------------------------------------------------+
-| NVIDIA-SMI 617.42                 Driver Version: 617.42         CUDA Version: 13.4     |
-|-----------------------------------+------------------------+----------------------------+
-| GPU  Name            TCC/WDDM     | Bus-Id          Disp.A | Volatile Uncorr. ECC       |
-| Fan  Temp   Perf     Pwr:Usage/Cap|           Memory-Usage | GPU-Util  Compute M.       |
-|===================================+========================+============================|
-|   0  NVIDIA GeForce ...     WDDM  |   00000000:01:00.0  On |                        N/A |
-| N/A   54C    P0         42W /  60W|    5385MiB /   6144MiB |     94%      Default       |
-+-----------------------------------+------------------------+----------------------------+
-| Processes:                                                                              |
-|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
-|=========================================================================================|
-|    0   N/A  N/A           34520      C   ...runners\cuda_v12\ollama_llama_...    4218MiB|
-+-----------------------------------------------------------------------------------------+
-```
-
 - **Active Compute Process**: `PID 34520` (`ollama_llama_server.exe` using CUDA v12)
 - **VRAM Dedicated to Ollama**: **4,218 MiB**
 - **Inference Speed**: **18.3 – 20.4 tokens/second** (vs. ~2.1 tokens/s on CPU)
 - **GPU Core Utilization**: **88% – 95%** during generation
 - **Operating Temperature**: **54°C – 56°C** under continuous generation
-
----
-
-### 3. Non-Blocking Real-Time Chat Streaming
-- **UI Responsiveness (`QThread` Worker)**: All HTTP communication with Ollama executes inside `OllamaChatWorker` on a separate thread. The main Qt event loop remains at 60 FPS; UI elements never freeze or drop inputs.
-- **Dual Token Streaming**: Supports both Qwen 3 reasoning/thinking tokens (`chunk["message"]["thinking"]` formatted inside collapsible `<think>...</think>` containers) and primary content tokens (`chunk["message"]["content"]`).
-- **Instant Interruption**: Clicking the Stop button (`⏹`) immediately triggers `stop_generation()`, terminating the socket connection and resetting the UI state in < 50ms.
-- **Clear Conversation**: Dedicated action (`🗑`) clears both the visible thread and the underlying SQLite message history.
-
----
-
-### 4. Persistent Chat History & SQLite Storage
-- All messages automatically save to `data/agent_database.sqlite`.
-- Retains sender, role, content, model identifier, and timestamp.
-- On launch or page navigation, past messages are automatically retrieved and rendered.
-
----
-
-### 5. System Prompt & Agent Persona
-Configured with an intelligent system instruction that:
-- Acts as a knowledgeable, concise personal desktop assistant.
-- Assists with technical development, file management, and planning.
-- Asks clarifying questions when user instructions are ambiguous.
-- Clearly states what actions are currently staged vs. executed, preventing simulated hallucinations.
-
----
-
-### 6. Live GPU & System Resource Monitoring
-- `SystemMonitor` polls CPU and RAM via `psutil`, and queries GPU status using lightweight `nvidia-smi` subprocess calls.
-- Bottom Status Bar displays live metrics:
-  ```text
-  CPU: 14.5% | RAM: 73.2% | GPU: 12% (5.4/6.0 GB) | Phase 2.1
-  ```
-- Gracefully handles systems without NVIDIA hardware without crashing.
 
 ---
 
@@ -165,26 +237,13 @@ The application is structured into a persistent 3-part layout:
 │ 💻 Coding    │               (Switches between 11 pages)                    │                   │
 │ ⚡ Workflows │                                                              │ Recent Activity:  │
 │ 🎙️ Voice     │                                                              │ • Model loaded    │
-│ 🧠 Memory    │                                                              │ • Chat stream ok  │
+│ 🧠 Memory    │                                                              │ • 🔧 get_time ok  │
 │ 📜 History   │                                                              │                   │
 │ ⚙️ Settings   │                                                              │                   │
 ├──────────────┴──────────────────────────────────────────────────────────────┴───────────────────┤
-│ ● Ollama: Online (qwen3:8b)   |   CPU: 12.4%   |   RAM: 72.1%   |   GPU: 14% (5.4/6.0 GB)  | v2.1   │
+│ ● Ollama: Online (qwen3:8b)   |   CPU: 12.4%   |   RAM: 72.1%   |   GPU: 14% (5.4/6.0 GB)  | v2.2.1 │
 └─────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
-
-### The 11 Modular Pages:
-1. **Home**: Command bar, quick action shortcuts, active task summary, system stats.
-2. **Agent Chat**: Live token streaming, model selection, reasoning toggle, stop/clear actions.
-3. **Tasks**: Task queue, status filters (Running, Waiting, Completed), creation modal.
-4. **Files**: Windows drive picker (C:, H:), folder navigation, file details table.
-5. **Browser**: Staged UI browser workspace with URL bar and automation status.
-6. **Coding Workspace**: VS Code-inspired IDE with Project Tree, Tabbed Editor, and Terminal.
-7. **Workflows**: Visual node-based automation canvas for multi-step agent recipes.
-8. **Voice Assistant**: Visual audio wave simulator and push-to-talk interface.
-9. **Memory**: Categorized key-value persistent storage for agent knowledge.
-10. **History**: Comprehensive timeline of user prompts, agent actions, and tool runs.
-11. **Settings**: Connection test utility, context size slider, GPU acceleration diagnostics.
 
 ---
 
@@ -204,7 +263,7 @@ PersonalAgent/
 │   │   │
 │   │   ├── pages/               # 11 Modular workspace views
 │   │   │   ├── home_page.py     # Command input, quick actions, active tasks
-│   │   │   ├── chat_page.py     # Streaming chat UI, model selector, stop & clear buttons
+│   │   │   ├── chat_page.py     # Streaming chat UI, ToolActivityWidget, model selector
 │   │   │   ├── tasks_page.py    # Metric counters, task queue, and creation dialog
 │   │   │   ├── files_page.py    # Local file manager with Windows drive selector
 │   │   │   ├── browser_page.py  # AI browser layout with controls & viewport
@@ -221,23 +280,31 @@ PersonalAgent/
 │   │
 │   ├── core/
 │   │   ├── __init__.py
-│   │   ├── agent.py             # AgentCore & OllamaChatWorker (non-blocking streaming)
+│   │   ├── agent.py             # AgentCore & OllamaChatWorker (multi-round tool execution loop)
 │   │   ├── model_manager.py     # ModelManager (Ollama API, model discovery, GPU query)
 │   │   ├── task_manager.py      # SQLite task queue manager
 │   │   └── system_monitor.py    # CPU, RAM, and NVIDIA GPU metrics monitor
 │   │
-│   ├── tools/                   # Staged for Phase 2.2 tool execution
+│   ├── tools/                   # Phase 2.2.1 Agent Tool Engine
+│   │   ├── __init__.py          # Tool package initialization & auto-registration
+│   │   ├── tool_registry.py     # ToolRegistry & ToolDefinition schemas
+│   │   ├── tool_validator.py    # ToolValidator schema and type enforcement
+│   │   ├── tool_permissions.py  # ToolPermissionPolicy & PermissionLevel
+│   │   ├── tool_executor.py     # ToolExecutor with timing, containment, and safety
+│   │   └── built_in_tools.py    # Safe tools: get_current_time, get_system_info, get_gpu_info
+│   │
 │   ├── automation/              # Staged for workflow automation
 │   ├── memory/
 │   │   └── memory_store.py      # SQLite memory querying and categorization
 │   └── database/
-│       └── db.py                # SQLite schema with persistent messages & tasks
+│       └── db.py                # SQLite schema with messages, tasks, and tool_executions
 │
 ├── data/                        # Persistent SQLite database (`agent_database.sqlite`)
 ├── logs/                        # Standard logging output (`personal_agent.log`)
 ├── tests/                       # Automated test suites
 │   ├── test_app.py              # Phase 1 UI, navigation, and resize verification
 │   ├── test_phase2.py           # Phase 2.1 Ollama, streaming, GPU benchmark suite
+│   ├── test_phase2_2_1.py       # Phase 2.2.1 Tool registry, validator, executor, and agent loop
 │   └── screenshots/             # Rendered test screenshots matching UI reference
 ├── ui images/                   # Provided UI reference screenshots
 └── README.md                    # Project documentation & progress report
@@ -261,32 +328,45 @@ CREATE TABLE IF NOT EXISTS messages (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tool execution audit log (Phase 2.2.1)
+CREATE TABLE IF NOT EXISTS tool_executions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    conversation_id TEXT DEFAULT 'default',
+    tool_name TEXT NOT NULL,
+    arguments TEXT,
+    result TEXT,
+    status TEXT NOT NULL,
+    duration_ms REAL DEFAULT 0.0,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Task management queue
 CREATE TABLE IF NOT EXISTS tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT,
-    status TEXT DEFAULT 'pending',
+    name TEXT NOT NULL,
+    category TEXT DEFAULT 'general',
+    status TEXT DEFAULT 'waiting',
     progress INTEGER DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    start_time TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Persistent memory store
-CREATE TABLE IF NOT EXISTS memory (
+CREATE TABLE IF NOT EXISTS memory_items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     category TEXT NOT NULL,
-    key TEXT NOT NULL,
-    value TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Activity history log
-CREATE TABLE IF NOT EXISTS history (
+CREATE TABLE IF NOT EXISTS activity_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    action TEXT NOT NULL,
-    details TEXT,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    category TEXT NOT NULL,
+    description TEXT NOT NULL,
+    status TEXT DEFAULT 'info',
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -336,23 +416,30 @@ CREATE TABLE IF NOT EXISTS history (
 
 ## 🧪 Verification & Benchmark Tests
 
-### 1. Phase 2.1 Verification Suite (Hardware & Inference)
+### 1. Phase 2.2.1 Agent Tool Engine Suite
 ```bash
-python tests/test_phase2.py
+python tests/test_phase2_2_1.py
 ```
 **Test Results**:
 ```text
 ========================================================
- ALL PHASE 2.1 VERIFICATION & GPU TESTS PASSED (5/5)!   
+ ALL PHASE 2.2.1 TESTS PASSED SUCCESSFULLY! (6/6)       
 ========================================================
-[Step 1/5] Testing ModelManager & Ollama Connectivity...  --> PASSED (qwen3:8b detected)
-[Step 2/5] Testing NVIDIA GPU Detection & Hardware...    --> PASSED (RTX 3050 6GB, 5.4GB VRAM)
-[Step 3/5] Testing Real Streaming Inference...           --> PASSED (18.3 - 20.4 tokens/s)
-[Step 4/5] Checking Ollama Processor Offloading...       --> PASSED (70% GPU offload, llamacpp)
-[Step 5/5] Testing SQLite Chat History & Stop Mechanism...--> PASSED (Saved & Stopped cleanly)
+[1/6] Testing Tool Registration...       --> PASSED (Registration, retrieval & Ollama format)
+[2/6] Testing Tool Validation...         --> PASSED (Required keys, types & unexpected params)
+[3/6] Testing Built-in Tools Execution.. --> PASSED (time: 0.05ms, sys: 166ms, gpu: 57ms)
+[4/6] Testing Tool Permissions...        --> PASSED (Safe read auto-approved, destructive rejected)
+[5/6] Testing SQLite Tool History...     --> PASSED (Logged to tool_executions table)
+[6/6] Testing Live Agent Tool Loop...    --> PASSED (Qwen 3 called get_current_time, formulated answer)
 ```
 
-### 2. Phase 1 UI & Regression Suite
+### 2. Phase 2.1 Hardware & GPU Benchmark Suite
+```bash
+python tests/test_phase2.py
+```
+*(Verifies Ollama connectivity, `qwen3:8b` detection, RTX 3050 GPU monitoring, and 18.3–20.4 tokens/s streaming).*
+
+### 3. Phase 1 UI & Regression Suite
 ```bash
 python tests/test_app.py
 ```
@@ -362,14 +449,13 @@ python tests/test_app.py
 
 ## 🔮 Roadmap Ahead
 
-- **Phase 2.2: Tool Execution & Computer Control**
-  - Native JSON schema tool calling protocol for Qwen 3.
-  - Safe file system tools: search, copy, move, and directory indexing.
-  - Application launcher: launch, monitor, and close Windows applications.
-  - Sandboxed command line runner with permission-level safety prompts.
+- **Phase 2.2.2: Safe File Operations & File Management Tools**
+  - Read files, search files, move files, copy files, rename files, create directories.
+  - User confirmation dialogs for write operations.
+- **Phase 2.2.3: Application Management & System Automation**
+  - Launch applications, detect running processes, graceful process termination.
 - **Phase 3: Coding IDE & Automation Engine**
-  - Monaco Editor / QScintilla integration with syntax highlighting and auto-completion.
+  - Monaco Editor / QScintilla code editor integration with syntax highlighting.
   - Node-based workflow execution from the Automation Builder.
 - **Phase 4: Multimodal Voice & Autonomous Agents**
   - Offline local Whisper speech-to-text and Piper TTS voice feedback.
-  - Autonomous multi-step desktop workflows.
