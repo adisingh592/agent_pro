@@ -106,8 +106,13 @@ class ToolExecutor:
             is_confirmed=is_confirmed
         )
 
-        # If it's a moderate write tool and not confirmed, let the handler execute to build confirmation payload
-        if not is_allowed and tool_def.permission_level == PermissionLevel.MODERATE_WRITE:
+        # If it requires confirmation and is not confirmed, let handler run to build confirmation payload
+        if not is_allowed and tool_def.permission_level in (
+            PermissionLevel.MODERATE_WRITE,
+            PermissionLevel.CONTROLLED_ACTION,
+            PermissionLevel.PROCESS_MODIFICATION,
+            PermissionLevel.DESTRUCTIVE
+        ):
             pass # We will let the handler return its requires_confirmation payload
         elif not is_allowed:
             duration_ms = (time.perf_counter() - start_time) * 1000

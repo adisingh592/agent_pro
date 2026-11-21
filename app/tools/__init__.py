@@ -1,6 +1,6 @@
 """
 Tools package initialization for Personal Agent.
-Automatically registers initial built-in system tools and file tools upon import.
+Automatically registers initial built-in system tools, file tools, and application/process tools upon import.
 """
 from .tool_permissions import PermissionLevel, ToolPermissionPolicy, default_permission_policy
 from .tool_validator import ToolValidator, ToolValidationError
@@ -23,12 +23,39 @@ from .file_tools import (
     organize_files_preview,
     organize_files
 )
+from .app_discovery import (
+    DiscoveredApplication,
+    ApplicationDiscovery,
+    ApplicationResolver,
+    ResolutionResult,
+    default_app_discovery,
+    default_app_resolver
+)
+from .process_manager import (
+    ProcessManager,
+    default_process_manager
+)
+from .app_tools import (
+    register_app_tools,
+    search_applications,
+    list_installed_applications,
+    launch_application,
+    open_file_with_application,
+    open_folder,
+    list_running_processes,
+    check_application_status,
+    get_process_info,
+    close_application
+)
 
 # Register built-in system tools
 register_built_in_tools(default_tool_registry)
 
 # Register Phase 2.2.2 file intelligence & operation tools
 register_file_tools(default_tool_registry)
+
+# Register Phase 2.2.3 application & process control tools
+register_app_tools(default_tool_registry)
 
 __all__ = [
     "PermissionLevel",
@@ -57,5 +84,23 @@ __all__ = [
     "rename_file",
     "create_directory",
     "organize_files_preview",
-    "organize_files"
+    "organize_files",
+    "DiscoveredApplication",
+    "ApplicationDiscovery",
+    "ApplicationResolver",
+    "ResolutionResult",
+    "default_app_discovery",
+    "default_app_resolver",
+    "ProcessManager",
+    "default_process_manager",
+    "register_app_tools",
+    "search_applications",
+    "list_installed_applications",
+    "launch_application",
+    "open_file_with_application",
+    "open_folder",
+    "list_running_processes",
+    "check_application_status",
+    "get_process_info",
+    "close_application"
 ]

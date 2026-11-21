@@ -8,11 +8,13 @@ from typing import Dict, Any, Optional
 
 class PermissionLevel(str, Enum):
     """Permission levels for tool execution safety."""
-    SAFE_READ_ONLY = "safe_read_only"      # Read-only information (time, system stats); always auto-approved
-    SAFE_ACTION = "safe_action"            # Safe non-destructive operations (file reading, search)
-    SENSITIVE_READ = "sensitive_read"      # Sensitive reads (private files, process lists)
-    MODERATE_WRITE = "moderate_write"      # Modifying files, creating folders (requires confirmation in later phases)
-    DESTRUCTIVE = "destructive"            # Deleting files, killing processes, system modifications (always requires user approval)
+    SAFE_READ_ONLY = "safe_read_only"              # Read-only information (time, system stats); always auto-approved
+    SAFE_ACTION = "safe_action"                    # Safe non-destructive operations (file reading, search)
+    SENSITIVE_READ = "sensitive_read"              # Sensitive reads (private files, process lists)
+    MODERATE_WRITE = "moderate_write"              # Modifying files, creating folders (requires user confirmation)
+    CONTROLLED_ACTION = "controlled_action"        # Launching apps, opening files/folders (requires user confirmation)
+    PROCESS_MODIFICATION = "process_modification"  # Graceful process termination (requires user confirmation)
+    DESTRUCTIVE = "destructive"                    # Deleting files, killing processes, system modifications (requires user approval)
 
 
 class ToolPermissionPolicy:
@@ -24,7 +26,12 @@ class ToolPermissionPolicy:
         self._auto_approved_tools = {
             "get_current_time",
             "get_system_info",
-            "get_gpu_info"
+            "get_gpu_info",
+            "search_applications",
+            "list_installed_applications",
+            "list_running_processes",
+            "check_application_status",
+            "get_process_info"
         }
 
     def is_tool_allowed(
@@ -50,6 +57,16 @@ class ToolPermissionPolicy:
             if is_confirmed:
                 return True, "Moderate write operation approved by user confirmation."
             return False, f"Tool '{tool_name}' requires explicit user confirmation (moderate write level)."
+
+        if permission_level == PermissionLevel.CONTROLLED_ACTION:
+            if is_confirmed:
+                return True, "Controlled application action approved by user confirmation."
+            return False, f"Tool '{tool_name}' requires explicit user confirmation (controlled action level)."
+
+        if permission_level == PermissionLevel.PROCESS_MODIFICATION:
+            if is_confirmed:
+                return True, "Process modification approved by user confirmation."
+            return False, f"Tool '{tool_name}' requires explicit user confirmation (process modification level)."
 
         if permission_level == PermissionLevel.DESTRUCTIVE:
             if is_confirmed:

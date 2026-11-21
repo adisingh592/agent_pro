@@ -185,7 +185,8 @@ class ConfirmationCardWidget(QFrame):
         header_layout = QHBoxLayout()
         icon_lbl = QLabel("🛡️")
         icon_lbl.setStyleSheet("font-size: 14px;")
-        title_lbl = QLabel("File Operation Approval Required")
+        title_text = self.data.get("title", "Operation Approval Required")
+        title_lbl = QLabel(title_text)
         title_lbl.setStyleSheet("color: #e59840; font-size: 13px; font-weight: 700;")
         header_layout.addWidget(icon_lbl)
         header_layout.addWidget(title_lbl, 1)
@@ -195,10 +196,37 @@ class ConfirmationCardWidget(QFrame):
         details_layout = QVBoxLayout()
         details_layout.setSpacing(4)
 
-        action_text = self.data.get("action", "File Modification")
+        action_text = self.data.get("action", "System Operation")
         action_lbl = QLabel(f"<b>Action:</b> {action_text}")
         action_lbl.setStyleSheet("color: #ffffff; font-size: 12px;")
         details_layout.addWidget(action_lbl)
+
+        app_text = self.data.get("application", "")
+        if app_text:
+            app_lbl = QLabel(f"<b>Application:</b> {app_text}")
+            app_lbl.setStyleSheet("color: #ffffff; font-size: 12px;")
+            details_layout.addWidget(app_lbl)
+
+        target_text = self.data.get("target", "")
+        if target_text:
+            t_lbl = QLabel(f"<b>Target:</b> <code>{target_text}</code>")
+            t_lbl.setStyleSheet("color: #d1d5db; font-size: 12px;")
+            t_lbl.setWordWrap(True)
+            details_layout.addWidget(t_lbl)
+
+        args_text = self.data.get("arguments", "")
+        if args_text and args_text != "None":
+            a_lbl = QLabel(f"<b>Arguments:</b> <code>{args_text}</code>")
+            a_lbl.setStyleSheet("color: #d1d5db; font-size: 12px;")
+            a_lbl.setWordWrap(True)
+            details_layout.addWidget(a_lbl)
+
+        file_text = self.data.get("file", "")
+        if file_text:
+            f_lbl = QLabel(f"<b>File:</b> <code>{file_text}</code>")
+            f_lbl.setStyleSheet("color: #d1d5db; font-size: 12px;")
+            f_lbl.setWordWrap(True)
+            details_layout.addWidget(f_lbl)
 
         source_text = self.data.get("source", "")
         if source_text and source_text != "None":

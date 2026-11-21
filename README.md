@@ -6,9 +6,9 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 
 ---
 
-## 📌 Project Status: Phase 2.2.2 (Complete & Verified)
+## 📌 Project Status: Phase 2.2.3 (Complete & Verified)
 
-> **Current Milestone**: Phase 2.2.2 — File Intelligence & Safe File Operations  
+> **Current Milestone**: Phase 2.2.3 — Application & Process Control  
 > **Target Hardware**: NVIDIA GeForce RTX 3050 Laptop GPU (6GB VRAM) / Intel Core i7-13650HX / 32GB RAM / Windows 11  
 > **Model**: `qwen3:8b` (5.2 GB GGUF, Q4_K_M) via Ollama (`llamacpp` CUDA v12 runner)  
 > **Repository**: [https://github.com/adisingh592/agent_pro.git](https://github.com/adisingh592/agent_pro.git)  
@@ -19,20 +19,27 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 
 1. [Project Completion & Progress Tracker](#-project-completion--progress-tracker)
 2. [Features Overview](#-features-overview)
-3. [Phase 2.2.2 — File Intelligence & Safe File Operations](#-phase-222--file-intelligence--safe-file-operations)
+3. [Phase 2.2.3 — Application & Process Control](#-phase-223--application--process-control)
+   - [Application Discovery & Registry Cache](#1-application-discovery--registry-cache)
+   - [Natural Language Application Name Resolution](#2-natural-language-application-name-resolution)
+   - [Read-Only Application & Process Tools](#3-read-only-application--process-tools)
+   - [Controlled Application Launching & File Associations](#4-controlled-application-launching--file-associations)
+   - [Safe Process Management & Graceful Termination](#5-safe-process-management--graceful-termination)
+   - [Security Restrictions & Critical Process Protection](#6-security-restrictions--critical-process-protection)
+4. [Phase 2.2.2 — File Intelligence & Safe File Operations](#-phase-222--file-intelligence--safe-file-operations)
    - [Filesystem Safety Architecture & Boundaries](#1-filesystem-safety-architecture--boundaries)
    - [Read-Only File Tools](#2-read-only-file-tools)
    - [Controlled Modification Tools & Verification](#3-controlled-modification-tools--verification)
    - [Interactive Confirmation System](#4-interactive-confirmation-system)
    - [Smart File Organization Workflow](#5-smart-file-organization-workflow)
-4. [Phase 2.2.1 — Agent Tool Engine](#-phase-221--agent-tool-engine)
-5. [Phase 2.1 — Local AI Integration & NVIDIA GPU Acceleration](#-phase-21--local-ai-integration--nvidia-gpu-acceleration)
-6. [Application Layout & Pages](#-application-layout--pages)
-7. [Project Structure](#-project-structure)
-8. [Database Schema](#-database-schema)
-9. [Getting Started & Installation](#-getting-started--installation)
-10. [Verification & Benchmark Tests](#-verification--benchmark-tests)
-11. [Roadmap Ahead](#-roadmap-ahead)
+5. [Phase 2.2.1 — Agent Tool Engine](#-phase-221--agent-tool-engine)
+6. [Phase 2.1 — Local AI Integration & NVIDIA GPU Acceleration](#-phase-21--local-ai-integration--nvidia-gpu-acceleration)
+7. [Application Layout & Pages](#-application-layout--pages)
+8. [Project Structure](#-project-structure)
+9. [Database Schema](#-database-schema)
+10. [Getting Started & Installation](#-getting-started--installation)
+11. [Verification & Benchmark Tests](#-verification--benchmark-tests)
+12. [Roadmap Ahead](#-roadmap-ahead)
 
 ---
 
@@ -46,7 +53,7 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 | **Phase 2.1: Local AI Integration** | Ollama local daemon API, `qwen3:8b` discovery, NVIDIA RTX 3050 6GB GPU acceleration (70% offload), non-blocking token streaming, chat history. | ✅ Complete | **100%** |
 | **Phase 2.2.1: Agent Tool Engine** | 5-stage tool execution pipeline, JSON Schema validation, permissions policy, multi-round tool loop, chat tool badges, 3 built-in safe tools. | ✅ Complete | **100%** |
 | **Phase 2.2.2: File Operations** | File search, list, metadata, text reading, recent/large files, verified copy/move/rename/mkdir, interactive confirmation UI, smart organization. | ✅ Complete | **100%** |
-| **Phase 2.2.3: App & Process Control** | Windows application launcher, process status inspection, graceful app termination. | ⏳ Pending | **0%** |
+| **Phase 2.2.3: App & Process Control** | Multi-source app discovery, natural language resolver, safe process inspection, controlled launch, graceful close, critical process guard. | ✅ Complete | **100%** |
 | **Phase 3: Coding IDE & Automation** | Code editor with syntax highlighting, project tree, terminal integration, visual workflow node execution. | ⏳ Pending | **0%** |
 | **Phase 4: Multimodal & Voice** | Offline local Whisper speech-to-text, Piper TTS voice feedback, autonomous multi-step desktop workflows. | ⏳ Pending | **0%** |
 
@@ -55,8 +62,8 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 [Phase 2.1]   ████████████████████ 100% Complete
 [Phase 2.2.1] ████████████████████ 100% Complete
 [Phase 2.2.2] ████████████████████ 100% Complete
-[Phase 2.2.3] ░░░░░░░░░░░░░░░░░░░░   0% Staged (Next)
-[Phase 3]     ░░░░░░░░░░░░░░░░░░░░   0% Staged
+[Phase 2.2.3] ████████████████████ 100% Complete
+[Phase 3]     ░░░░░░░░░░░░░░░░░░░░   0% Staged (Next)
 [Phase 4]     ░░░░░░░░░░░░░░░░░░░░   0% Staged
 ```
 
@@ -99,11 +106,28 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
      - `organize_files`: Safely moves files into categorized subfolders without overwrite conflicts.
    - **Interactive Confirmation UI**: `ConfirmationCardWidget` embedded in chat prompting users with `[Approve & Execute]` and `[Reject]` actions for all write operations.
 
-5. **🗄️ Database & Storage (100% Verified)**:
+5. **🖥️ Application & Process Control (Phase 2.2.3 — 100% Verified)**:
+   - **Multi-Source Application Discovery**: Discovers installed applications from Windows `App Paths` registry, Start Menu shortcuts, `Uninstall` registry keys, known built-in utilities (Notepad, Calculator, Paint, File Explorer, Terminal, PowerShell, CMD, Task Manager), and PATH binaries with a 1-hour cache TTL.
+   - **Natural Language Application Name Resolution**: Standard alias resolution (e.g. `VS Code` → `Visual Studio Code`, `Chrome` → `Google Chrome`, `calc` → `Calculator`), fuzzy matching, and strict ambiguity protection (returns candidate choices for user clarification when ambiguous).
+   - **5 Read-Only Tools (Auto-Approved)**:
+     - `search_applications`: Searches installed applications by query or category keyword with match confidence scoring.
+     - `list_installed_applications`: Lists discovered applications filtered optionally by category (Development, Browser, Media, Productivity, System, Other).
+     - `list_running_processes`: Lists active Windows processes with CPU %, memory in MB, status, and PID sorting/filtering without leaking environment secrets.
+     - `check_application_status`: Verifies whether an application (e.g. Ollama, Chrome, VS Code) is running with aggregate memory usage and process count.
+     - `get_process_info`: Queries comprehensive process runtime metrics by name or specific PID.
+   - **4 Controlled Actions (Requires User Approval)**:
+     - `launch_application`: Launches registered Windows desktop applications with strict shell injection prevention and PID verification.
+     - `open_file_with_application`: Opens files with specified application or default Windows association while respecting filesystem boundaries.
+     - `open_folder`: Safely opens directory paths in Windows File Explorer.
+     - `close_application`: Gracefully terminates application processes (`SIGTERM` / `WM_CLOSE`), waits up to 2.5s, verifies exit, and blocks critical Windows system processes.
+   - **Security Restriction Guard**: Hard blacklist preventing termination of critical Windows infrastructure (`explorer.exe`, `svchost.exe`, `System`, `csrss.exe`, `dwm.exe`, etc.) and the agent's own process.
+
+6. **🗄️ Database & Storage (100% Verified)**:
    - SQLite database (`data/agent_database.sqlite`) with 5 active tables: `messages`, `tasks`, `memory_items`, `activity_logs`, and `tool_executions`.
    - Comprehensive audit logging recording tool names, arguments, results, verification status, and execution durations.
 
-6. **📊 Automated Test Coverage (22 / 22 Tests Passing — 100%)**:
+7. **📊 Automated Test Coverage (41 / 41 Tests Passing — 100%)**:
+   - `tests/test_phase2_2_3.py`: **19 / 19 PASSED** (Discovery, caching, exact/alias/fuzzy/ambiguous resolution, launch validation, shell injection guard, open file/folder, process listing/filtering, application status, process info, critical process guard, graceful close verification, tool executor integration)
    - `tests/test_phase2_2_2.py`: **5 / 5 PASSED** (Filesystem safety, read-only tools, modifications with verification, organization, database auditing)
    - `tests/test_phase2_2_1.py`: **6 / 6 PASSED** (Registry, Validation, Tools, Permissions, SQLite logging, Live Round-Trip)
    - `tests/test_phase2.py`: **5 / 5 PASSED** (Ollama online, `qwen3:8b` detected, RTX 3050 6GB stats, 18.5 tok/s inference, stop mechanism)
@@ -127,10 +151,128 @@ Inspired by VS Code, Antigravity, and modern developer workspaces, Personal Agen
 | **Read-Only File Tools** | 6 auto-approved tools: `search_files`, `list_directory`, `get_file_info`, `read_text_file`, `find_recent_files`, `find_large_files`. | ✅ Complete |
 | **Controlled File Writes** | Verified `copy_file`, `move_file`, `rename_file`, `create_directory` with strict post-execution verification. | ✅ Complete |
 | **Smart File Organization** | Preview-first category sorting (`organize_files_preview`, `organize_files`) across Documents, Images, Code, etc. | ✅ Complete |
-| **Interactive Confirmation UI** | In-chat `ConfirmationCardWidget` requiring explicit `[✓ Approve & Execute]` or `[✕ Reject]` for disk writes. | ✅ Complete |
+| **Application Discovery** | Multi-source scanning (App Paths, Start Menu, Uninstall registry, PATH) with intelligent 1-hour cache TTL. | ✅ Complete |
+| **Name Resolution Engine** | Alias mapping, fuzzy matching, and ambiguity guard prompting user clarification when multiple apps match. | ✅ Complete |
+| **Process Inspection** | Safe process enumeration, status tracking, CPU % and memory monitoring without credential exposure. | ✅ Complete |
+| **Controlled App Launching** | Safe `subprocess` launching without `shell=True`, argument sanitization, and post-launch PID verification. | ✅ Complete |
+| **Graceful Process Closure** | Non-destructive `terminate()` shutdown with 2.5s verification and hard blocking of critical system processes. | ✅ Complete |
+| **Interactive Confirmation UI** | In-chat `ConfirmationCardWidget` requiring explicit `[✓ Approve & Execute]` or `[✕ Reject]` for disk writes, app launch, and process termination. | ✅ Complete |
 | **Instant Interruption** | Responsive "Stop Generating" (`⏹`) control that cancels network socket operations and tool execution immediately. | ✅ Complete |
 | **Persistent Storage** | SQLite-backed database storing tasks, memories, activity history, chat messages, and tool executions. | ✅ Complete |
 | **Live Hardware Monitor** | Background polling of CPU %, RAM %, GPU utilization %, VRAM allocation, and GPU temperature. | ✅ Complete |
+
+---
+
+## 🖥️ Phase 2.2.3 — Application & Process Control
+
+Phase 2.2.3 empowers Personal Agent with the ability to discover, launch, monitor, inspect, and safely manage Windows desktop applications and processes through a unified, permission-gated tool engine.
+
+```text
+       User Natural Language Request ("Launch VS Code", "Is Ollama running?", "Close Spotify")
+                                          │
+                                          ▼
+                                   Agent Core & LLM
+                                          │
+                                          ▼
+                         Application & Process Tool Selection
+                                          │
+                  ┌───────────────────────┴───────────────────────┐
+                  ▼                                               ▼
+         [READ-ONLY TOOLS]                               [CONTROLLED ACTIONS]
+  • search_applications                           • launch_application
+  • list_installed_applications                   • open_file_with_application
+  • list_running_processes                        • open_folder
+  • check_application_status                      • close_application
+  • get_process_info                                              │
+                  │                                               ▼
+                  │                                  [ConfirmationCardWidget in Chat]
+                  │                                  [✕ Reject]   [✓ Approve & Execute]
+                  │                                               │
+                  └───────────────────────┬───────────────────────┘
+                                          ▼
+                             [Tool Execution & Verification]
+                                          │
+                                          ▼
+                          [Natural Language Agent Response]
+```
+
+---
+
+### 1. Application Discovery & Registry Cache
+
+Rather than performing slow, exhaustive disk scans across entire drives, Personal Agent aggregates verified Windows application sources with an intelligent 1-hour cache (`CACHE_TTL_SECONDS = 3600.0`):
+
+1. **Registry App Paths**: Inspects `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths` and `HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths` for registered application binaries (Chrome, VS Code, Brave, Firefox, Excel, etc.).
+2. **Start Menu Shortcuts**: Recursively scans user shortcuts (`%APPDATA%\Microsoft\Windows\Start Menu\Programs`) and machine shortcuts (`%PROGRAMDATA%\Microsoft\Windows\Start Menu\Programs`), ignoring uninstallers, documentation, and help links.
+3. **Registry Uninstall Catalog**: Queries `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall` (both 64-bit and WOW6432Node) and `HKCU` to resolve installed software display names and executable icons.
+4. **Known Windows System Utilities**: Pre-configured instant access to standard utilities (`notepad.exe`, `calc.exe`, `mspaint.exe`, `explorer.exe`, `cmd.exe`, `powershell.exe`, `taskmgr.exe`, `regedit.exe`).
+5. **System PATH Executables**: Resolves developer CLI tools (`ollama`, `wt`, `code`, `git`, `python`).
+
+Each application is classified into standardized categories: **Development**, **Browser**, **Media**, **Productivity**, **System**, or **Other**.
+
+---
+
+### 2. Natural Language Application Name Resolution
+
+The `ApplicationResolver` handles varied user phrasing with a multi-stage matching hierarchy:
+- **Normalization**: Strips `.exe`, command prefixes (`open`, `launch`, `start`), and punctuation.
+- **Alias Mapping**: Recognizes common variations (e.g. `VS Code` / `Code` → `Visual Studio Code`, `Chrome` → `Google Chrome`, `Edge` → `Microsoft Edge`, `calc` → `Calculator`, `terminal` → `Windows Terminal`, `ps` → `PowerShell`).
+- **Exact & Substring Matching**: Matches primary names and verified aliases.
+- **Fuzzy Matching (`difflib`)**: Resolves minor user typos (confidence ≥ 0.65).
+- **Ambiguity Guard**: When a query matches multiple applications with close scores (e.g., `"Visual Studio"` matching both *Visual Studio Code* and *Visual Studio 2022*), the agent does **not** guess; it returns candidate choices asking the user for clarification.
+
+---
+
+### 3. Read-Only Application & Process Tools (Auto-Approved)
+
+| Tool Name | Parameters | Description |
+| :--- | :--- | :--- |
+| **`search_applications`** | `query`, `maximum_results` | Searches installed applications by name or category keyword with confidence scoring. |
+| **`list_installed_applications`** | `category`, `maximum_results` | Lists discovered desktop applications filtered optionally by category. |
+| **`list_running_processes`** | `filter`, `maximum_results`, `sort_by` | Lists active processes with PID, memory (MB/readable), CPU %, and status. Never exposes passwords or env secrets. |
+| **`check_application_status`** | `application_name` | Verifies whether an application is currently running, aggregating memory usage across worker processes. |
+| **`get_process_info`** | `process_name`, `optional_pid` | Retrieves runtime statistics (CPU %, memory, start timestamp, status) for a specific process. |
+
+---
+
+### 4. Controlled Application Launching & File Associations
+
+All launch and folder opening tools require explicit user approval (`CONTROLLED_ACTION`):
+
+| Tool Name | Action | Verification Rule |
+| :--- | :--- | :--- |
+| **`launch_application`** | Launches a verified application executable or shortcut. | Validates target existence, strips dangerous shell injection characters (`&`, `\|`, `;`, `$`), runs with `shell=False`, and verifies process creation with PID. |
+| **`open_file_with_application`** | Opens a file using a designated app or default Windows handler. | Enforces `FilesystemSafety.validate_read_path` boundaries, confirms file existence, and launches safely. |
+| **`open_folder`** | Opens a directory in Windows File Explorer. | Validates directory existence, checks safety boundaries, and launches `explorer.exe`. |
+
+---
+
+### 5. Safe Process Management & Graceful Termination
+
+The `close_application` tool implements safe process management:
+1. **Resolution & PID Mapping**: Identifies all active child and worker PIDs associated with the application.
+2. **Interactive Confirmation**: Prompts the user with `[✕ Reject]` and `[✓ Approve & Execute]` showing target PIDs and warning about potential unsaved work.
+3. **Graceful Termination**: Uses `proc.terminate()` (`WM_CLOSE` / `SIGTERM`), **never** forcing termination initially.
+4. **Post-Termination Verification**: Waits up to 2.5 seconds with `psutil.wait_procs()`. If the process exits, reports success. If it remains alive, reports graceful shutdown failure without escalating to force-kill.
+
+---
+
+### 6. Security Restrictions & Critical Process Protection
+
+To protect system integrity, `ProcessManager.is_critical_process()` hard-blocks termination attempts against critical Windows operating system components and the Personal Agent itself:
+
+```text
+Protected Critical Processes:
+  • System (PID 4)             • dwm.exe (Desktop Window Manager)
+  • smss.exe (Session Manager) • explorer.exe (Windows Shell)
+  • csrss.exe (Client/Server)  • taskhostw.exe (Host Process)
+  • wininit.exe                • sihost.exe / shellexperiencehost.exe
+  • services.exe               • securityhealthservice.exe / msmpeng.exe
+  • lsass.exe                  • Personal Agent Process (os.getpid() & parent)
+  • svchost.exe
+```
+
+Attempting to close any of these processes is rejected immediately with a `Security restriction` error.
 
 ---
 
@@ -582,11 +724,42 @@ CREATE TABLE IF NOT EXISTS activity_logs (
 
 ## 🧪 Verification & Benchmark Tests
 
-### 1. Phase 2.2.2 File Intelligence & Operations Suite
+### 1. Phase 2.2.3 Application & Process Control Suite
+```bash
+python tests/test_phase2_2_3.py
+```
+**Test Results (19 / 19 Tests Passed — 100%)**:
+```text
+======================================================================
+Ran 19 tests in 42.253s
+
+OK
+[1/19] test_caching_behavior                              --> PASSED (1-hour TTL cache hit & invalidation)
+[2/19] test_exact_resolution                              --> PASSED (Exact 'Notepad' match, 1.0 confidence)
+[3/19] test_alias_resolution                              --> PASSED ('vs code' -> 'Visual Studio Code', 'chrome' -> 'Google Chrome')
+[4/19] test_fuzzy_resolution                              --> PASSED ('google chrom' -> 'Google Chrome' >0.65)
+[5/19] test_ambiguous_resolution                          --> PASSED ('Visual Studio' returns candidate choices)
+[6/19] test_unknown_application                           --> PASSED (Rejected non-existent app)
+[7/19] test_launch_requires_confirmation                  --> PASSED (Staged ConfirmationCardWidget)
+[8/19] test_launch_rejects_dangerous_shell_injection      --> PASSED (Blocked shell metacharacters '&', '|', ';', '$')
+[9/19] test_launch_handles_invalid_application            --> PASSED (Safe error handling)
+[10/19] test_open_file_requires_confirmation_and_validates --> PASSED (Enforced FilesystemSafety boundaries & confirmation)
+[11/19] test_open_folder_requires_confirmation            --> PASSED (Validated folder & confirmation card)
+[12/19] test_list_running_processes                       --> PASSED (Enumerated processes with memory MB, CPU %, PID)
+[13/19] test_check_application_status                     --> PASSED (Active 'python' detected; fake app reported offline)
+[14/19] test_get_process_info_by_pid                      --> PASSED (Retrieved exact PID stats & create time)
+[15/19] test_critical_process_protection                  --> PASSED (Blocked termination of explorer.exe, svchost, System, agent PID)
+[16/19] test_graceful_process_closure_on_dummy_subprocess --> PASSED (Graceful terminate() + exit verification on dummy subprocess)
+[17/19] test_phase2_2_3_tools_registered                  --> PASSED (All 9 tools in registry with correct permission levels)
+[18/19] test_search_applications_executor_execution       --> PASSED (Executed through ToolExecutor pipeline)
+[19/19] test_list_running_processes_executor_execution    --> PASSED (Executed through ToolExecutor pipeline)
+```
+
+### 2. Phase 2.2.2 File Intelligence & Operations Suite
 ```bash
 python tests/test_phase2_2_2.py
 ```
-**Test Results**:
+**Test Results (5 / 5 Tests Passed — 100%)**:
 ```text
 ========================================================
  ALL PHASE 2.2.2 TESTS PASSED SUCCESSFULLY! (5/5)       
@@ -598,32 +771,38 @@ python tests/test_phase2_2_2.py
 [5/5] Testing Database Audit Logging...              --> PASSED (logged with confirmed status & duration)
 ```
 
-### 2. Phase 2.2.1 Agent Tool Engine Suite
+### 3. Phase 2.2.1 Agent Tool Engine Suite
 ```bash
 python tests/test_phase2_2_1.py
 ```
-*(Verifies tool registration, JSON schema validation, permissions, 3 safe built-in tools, and multi-round agent loop).*
+*(Verifies tool registration, JSON schema validation, permissions, 3 safe built-in tools, and live multi-round agent loop with Ollama `qwen3:8b` — 6/6 PASSED).*
 
-### 3. Phase 2.1 Hardware & GPU Benchmark Suite
+### 4. Phase 2.1 Hardware & GPU Benchmark Suite
 ```bash
 python tests/test_phase2.py
 ```
-*(Verifies Ollama connectivity, `qwen3:8b` detection, RTX 3050 GPU monitoring, and 18.3–20.4 tokens/s streaming).*
+*(Verifies Ollama connectivity, `qwen3:8b` detection, RTX 3050 GPU monitoring, and 18.3–20.4 tokens/s streaming — 5/5 PASSED).*
 
-### 4. Phase 1 UI & Regression Suite
+### 5. Phase 1 UI & Regression Suite
 ```bash
 python tests/test_app.py
 ```
-*(Verifies all 11 pages, sidebar navigation, window resizing, and theme consistency without headless display crashes).*
+*(Verifies all 11 pages, sidebar navigation, window resizing, and theme consistency — 6/6 PASSED).*
 
 ---
 
 ## 🔮 Roadmap Ahead
 
-- **Phase 2.2.3: Application Management & System Automation**
-  - Launch applications, detect running processes, graceful process termination.
-- **Phase 3: Coding IDE & Automation Engine**
+- [x] **Phase 1: Desktop UI Foundation** (Complete)
+- [x] **Phase 2.1: Local AI Integration & NVIDIA GPU Acceleration** (Complete)
+- [x] **Phase 2.2.1: Agent Tool Engine** (Complete)
+- [x] **Phase 2.2.2: File Intelligence & Safe File Operations** (Complete)
+- [x] **Phase 2.2.3: Application & Process Control** (Complete)
+- [ ] **Phase 3: Coding IDE & Automation Engine** (Next Staged)
   - Monaco Editor / QScintilla code editor integration with syntax highlighting.
-  - Node-based workflow execution from the Automation Builder.
-- **Phase 4: Multimodal Voice & Autonomous Agents**
+  - Project directory explorer tree with file editing capabilities.
+  - Interactive embedded terminal session.
+  - Visual node-based workflow execution engine.
+- [ ] **Phase 4: Multimodal Voice & Autonomous Desktop Control**
   - Offline local Whisper speech-to-text and Piper TTS voice feedback.
+  - Autonomous multi-step workflow planner with state verification.
