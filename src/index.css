@@ -4,28 +4,29 @@
 
 @layer base {
   :root {
-    --bg-main: #111210;
-    --bg-secondary: #181917;
-    --bg-elevated: #1E201E;
-    --bg-hover: #252824;
-    --border-subtle: #2B2D2A;
-    --text-primary: #EAECE7;
-    --text-secondary: #999E96;
-    --text-muted: #686D66;
-    --accent: #D9A45B;
-    --accent-hover: #E7B66F;
+    --bg-main: #050907;
+    --bg-secondary: #0A110D;
+    --bg-elevated: #111A14;
+    --bg-hover: #17241A;
+    --border-subtle: rgba(156, 190, 153, 0.15);
+    --text-primary: #F1F5ED;
+    --text-secondary: #A4ADA2;
+    --text-muted: #6F796F;
+    --accent: #9BE34A;
+    --accent-hover: #C5FF67;
   }
 
   * {
-    border-color: #2B2D2A;
+    border-color: rgba(156, 190, 153, 0.15);
   }
 
   body {
-    background-color: #111210;
-    color: #EAECE7;
+    background-color: #050907;
+    color: #F1F5ED;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     user-select: none;
     -webkit-font-smoothing: antialiased;
+    overflow: hidden;
   }
 }
 
@@ -40,16 +41,73 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #252824;
+  background: rgba(156, 190, 153, 0.2);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3B3E39;
+  background: rgba(155, 227, 74, 0.4);
 }
 
 /* Smooth Focus Rings */
 :focus-visible {
-  outline: 1px solid rgba(217, 164, 91, 0.6);
+  outline: 1px solid rgba(155, 227, 74, 0.6);
   outline-offset: 1px;
+}
+
+/* Keyframe animations for Orbit */
+@keyframes orbit-pulse {
+  0%, 100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+}
+
+@keyframes wave-swirl-cw {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes wave-swirl-ccw {
+  0% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes star-twinkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.2);
+  }
+}
+
+.animate-orbit-pulse {
+  animation: orbit-pulse 4s ease-in-out infinite;
+}
+
+.animate-swirl-cw {
+  animation: wave-swirl-cw 35s linear infinite;
+}
+
+.animate-swirl-ccw {
+  animation: wave-swirl-ccw 45s linear infinite;
+}
+
+.animate-twinkle {
+  animation: star-twinkle 3s ease-in-out infinite;
 }

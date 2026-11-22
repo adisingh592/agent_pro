@@ -1,4 +1,5 @@
 export type NavPage =
+  | "orbit"
   | "chat"
   | "computer"
   | "applications"
@@ -6,7 +7,11 @@ export type NavPage =
   | "tasks"
   | "memory"
   | "activity"
-  | "settings";
+  | "settings"
+  | "ide"
+  | "automation"
+  | "skills"
+  | "history";
 
 export interface ToolActivity {
   id: string;
@@ -99,10 +104,22 @@ export interface MemoryItem {
 
 export interface ActivityEntry {
   id: string;
-  type: "tool_execution" | "task_state" | "confirmation_approved" | "emergency_stop" | "error";
+  type?: string;
+  title?: string;
+  timestamp: string;
+  toolName?: string;
+  status: "success" | "warning" | "error" | "info" | "denied" | "aborted";
+  riskLevel?: "low" | "medium" | "high";
+  executionTimeMs?: number;
+  durationMs?: number;
+  description: string;
+  caller?: string;
+}
+
+export interface SafetySetting {
+  id: string;
   title: string;
   description: string;
-  timestamp: string;
-  status: "success" | "warning" | "error" | "info";
-  durationMs?: number;
+  enabled: boolean;
+  category: "safety" | "execution" | "privacy" | "network";
 }
