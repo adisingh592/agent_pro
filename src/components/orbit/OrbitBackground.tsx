@@ -4,20 +4,16 @@ export const OrbitBackground: React.FC = () => {
   return (
     <div className="absolute inset-0 pointer-events-none select-none z-0 overflow-hidden">
       {/* Deep forest base tone */}
-      <div className="absolute inset-0 bg-[#050907]" />
+      <div className="absolute inset-0 bg-[#030604]" />
 
-      {/* Real atmospheric mountain & misty pine forest landscape */}
+      {/* Clean atmospheric environmental landscape (pure scenery: mountains, pine ridges, mist, stars) */}
       <img
-        src="/orbit-scene.jpg"
+        src="/orbit-clean-bg.svg"
         alt="Orbit Environment"
-        className="absolute inset-0 w-full h-full object-cover opacity-80 pointer-events-none"
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
       />
 
-      {/* Gradient vignette overlays to ensure perfect contrast and depth */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#050907] via-transparent to-[#050907]/70" />
-      <div className="absolute inset-0 bg-radial from-transparent via-[#050907]/20 to-[#050907]/80" />
-
-      {/* Center atmospheric green volumetric aura behind core */}
+      {/* Atmospheric center radial aura behind the central AI core */}
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[680px] h-[680px] rounded-full blur-[130px] opacity-45 pointer-events-none"
         style={{
@@ -25,7 +21,7 @@ export const OrbitBackground: React.FC = () => {
         }}
       />
 
-      {/* Neon emerald underglow radiating beneath the command bar onto the valley */}
+      {/* Neon emerald underglow radiating beneath the command bar */}
       <div
         className="absolute bottom-16 left-1/2 -translate-x-1/2 w-[540px] h-[36px] rounded-full blur-[24px] opacity-80 pointer-events-none"
         style={{
@@ -33,7 +29,7 @@ export const OrbitBackground: React.FC = () => {
         }}
       />
 
-      {/* Diffuse misty glow in the lower valley */}
+      {/* Diffuse misty glow across the valley floor */}
       <div
         className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[750px] h-[140px] rounded-full blur-[60px] opacity-40 pointer-events-none"
         style={{
