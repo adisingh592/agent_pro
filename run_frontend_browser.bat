@@ -1,6 +1,6 @@
 @echo off
-title Personal Agent - Modern UI (Browser Preview)
+title Personal Agent - Futuristic AI Dashboard
 cd /d "%~dp0"
-echo Starting Personal Agent Modern Frontend on http://localhost:1420 ...
-start http://localhost:1420
+echo Starting Personal Agent Orbital Dashboard on http://localhost:1420/templates/orbital/overview.html ...
+start http://localhost:1420/templates/orbital/overview.html
 npm run dev

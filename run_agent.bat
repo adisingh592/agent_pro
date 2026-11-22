@@ -1,9 +1,9 @@
 @echo off
-title Personal Agent - Orbit Environment
+title Personal Agent - Futuristic AI Dashboard
 cd /d "%~dp0"
 echo ========================================================
-echo   Launching Personal Agent - Orbit Intelligent UI
+echo   Launching Personal Agent - Futuristic Control Deck
 echo ========================================================
-echo Opening http://localhost:1420 in browser...
-start http://localhost:1420
+echo Opening Orbital Dashboard in your browser...
+start http://localhost:1420/templates/orbital/overview.html
 npm run dev

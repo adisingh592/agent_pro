@@ -1,12 +1,181 @@
-<!DOCTYPE html>
-<html lang="en" class="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Personal Agent</title>
-  </head>
-  <body class="bg-bg-main text-text-primary antialiased selection:bg-accent/25 selection:text-text-primary overflow-hidden">
-    <div id="root" class="h-screen w-screen flex flex-col"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><radialGradient id='g' cx='.38' cy='.32' r='.7'><stop offset='0' stop-color='%23fff'/><stop offset='.35' stop-color='%238BE9FF'/><stop offset='1' stop-color='%231B2A6B'/></radialGradient></defs><rect width='64' height='64' rx='16' fill='%2305060C'/><circle cx='32' cy='32' r='19' fill='url(%23g)'/></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Personal Agent — Futuristic AI Dashboard</title>
+<meta name="description" content="Two futuristic admin dashboard templates for Personal Agent: Orbital (spatial three.js planet) and Aurora (glass sphere and living canvas).">
+<meta name="theme-color" content="#05060C">
+<style>
+@font-face{font-family:"Sora";src:url("templates/orbital/assets/fonts/Sora-200-700-latin.woff2") format("woff2");font-weight:200 700;font-display:swap}
+:root{--bg:#05060C;--ink:#EEF0FF;--ink-2:rgba(238,240,255,.72);--ink-3:rgba(238,240,255,.5);--line:rgba(255,255,255,.12);
+ --violet:#6D4AFF;--pink:#FF4F93;--amber:#FFB36B;--ice:#8BE9FF;--lime:#9BE34A;--r:22px;
+ --mono:ui-monospace,"SF Mono","Geist Mono","IBM Plex Mono",Menlo,Consolas,monospace;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{min-height:100vh;background:var(--bg);color:var(--ink);font:300 16px/1.55 "Sora",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+.sky{position:fixed;inset:0;z-index:-1;pointer-events:none;background:
+ radial-gradient(60% 55% at 12% 105%,rgba(109,74,255,.45),transparent 60%),
+ radial-gradient(45% 45% at 38% 115%,rgba(255,79,147,.28),transparent 60%),
+ radial-gradient(55% 60% at 92% 108%,rgba(255,179,107,.28),transparent 60%),
+ radial-gradient(40% 40% at 85% -5%,rgba(139,233,255,.18),transparent 60%)}
+.sky::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:44px 44px;-webkit-mask-image:radial-gradient(70% 60% at 50% 30%,#000,transparent);mask-image:radial-gradient(70% 60% at 50% 30%,#000,transparent)}
+.wrap{width:min(1240px,100% - 48px);margin:0 auto}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:24px 0}
+.brand{display:flex;align-items:center;gap:12px;font-weight:600;letter-spacing:.02em;text-decoration:none}
+.dot{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,var(--ice) 30%,var(--violet) 70%,transparent 72%);box-shadow:0 0 18px rgba(139,233,255,.6)}
+.top nav{display:flex;gap:10px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 20px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);text-decoration:none;font:500 14px/1 "Sora",system-ui,sans-serif;transition:background .2s,border-color .2s}
+.pill:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3)}
+.pill.pri{background:#fff;color:#0A0B12;border-color:transparent;font-weight:600}
+.pill.pri:hover{background:#e9ecff}
+.hero{padding:60px 0 48px;text-align:center}
+.kicker{font:500 12px/1 var(--mono);letter-spacing:.24em;text-transform:uppercase;color:var(--ice)}
+h1{font-weight:200;font-size:clamp(40px,7vw,92px);line-height:.98;letter-spacing:-.035em;margin:20px 0 0}
+h1 b{font-weight:600;background:linear-gradient(90deg,#8BE9FF,#B49BFF 45%,#FF7FB0);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{max-width:720px;margin:24px auto 0;color:var(--ink-2);font-size:clamp(16px,1.6vw,19px)}
+.chips{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:26px}
+.chips span{font:500 12px/1 var(--mono);padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--ink-2)}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:28px;padding-bottom:40px}
+.card{position:relative;border-radius:var(--r);border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);overflow:hidden;display:flex;flex-direction:column;transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .3s,box-shadow .35s}
+.card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.24);box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.card.o:hover{box-shadow:0 30px 90px rgba(139,233,255,.25)}
+.card.a:hover{box-shadow:0 30px 90px rgba(109,74,255,.25)}
+.body{padding:28px;display:flex;flex-direction:column;gap:14px;flex:1}
+.card h2{margin:0;font-weight:300;font-size:32px;letter-spacing:-.02em}
+.card h2 em{font-style:normal;font-weight:600}
+.card.o h2 em{color:var(--ice)}
+.card.a h2 em{background:linear-gradient(90deg,#B49BFF,#FF7FB0);-webkit-background-clip:text;background-clip:text;color:transparent}
+.card p{margin:0;color:var(--ink-2);line-height:1.6}
+.meta{display:flex;flex-wrap:wrap;gap:8px}
+.meta span{font:500 12px/1 var(--mono);padding:8px 12px;border-radius:8px;background:rgba(255,255,255,.06);color:var(--ink-2)}
+.act{display:flex;gap:10px;flex-wrap:wrap;margin-top:auto;padding-top:10px}
+.rooms{padding:30px 0 50px}
+.rooms h3{font-size:22px;font-weight:300;margin:0 0 16px;color:var(--ink-2)}
+.room-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.room-btn{display:flex;flex-direction:column;gap:4px;padding:16px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.03);text-decoration:none;transition:all .2s}
+.room-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.25);transform:translateY(-2px)}
+.room-btn b{font-size:14px;font-weight:600}
+.room-btn span{font-size:12px;color:var(--ink-3)}
+footer{border-top:1px solid var(--line);padding:28px 0 40px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:var(--ink-3);font-size:14px}
+@media (max-width:860px){.cards{grid-template-columns:1fr}.hero{padding:40px 0 36px}}
+</style>
+</head>
+<body>
+<div class="sky" aria-hidden="true"></div>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="./"><span class="dot" aria-hidden="true"></span>PERSONAL AGENT</a>
+    <nav aria-label="Quick Launch">
+      <a class="pill pri" href="templates/orbital/overview.html">Open Orbital Deck (3D) →</a>
+      <a class="pill" href="templates/aurora/overview.html">Open Aurora (Canvas)</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <div class="kicker">Autonomous Computer-Use Engine</div>
+      <h1>Personal Agent<br><b>Command Decks</b></h1>
+      <p class="lead">Two futuristic admin environments for your autonomous personal AI agent. Select a deck below to launch.</p>
+      <div class="chips">
+        <span>Three.js 3D Planet</span>
+        <span>Living Canvas Sphere</span>
+        <span>Orbit Dial Navigation</span>
+        <span>Responsive 390 → 1920 px</span>
+        <span>Native Windows Control</span>
+      </div>
+    </section>
+
+    <section class="cards" aria-label="Templates">
+      <!-- Orbital Card -->
+      <article class="card o">
+        <div class="body">
+          <h2>Personal Agent <em>Orbital</em></h2>
+          <p>Nine rooms orbit one living 3D planet. Spatial glass windows, live traffic arcs, satellite nodes, camera flight transitions between rooms, and command composer with ⌘K palette.</p>
+          <div class="meta">
+            <span>Three.js r149</span>
+            <span>9 Rooms + Deck</span>
+            <span>Camera Flights</span>
+            <span>Offline Bundled</span>
+          </div>
+          <div class="act">
+            <a class="pill pri" href="templates/orbital/overview.html">Launch Orbital Overview →</a>
+            <a class="pill" href="templates/orbital/index.html">Hub Index</a>
+            <a class="pill" href="templates/orbital/operations.html">Operations</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Aurora Card -->
+      <article class="card a">
+        <div class="body">
+          <h2>Personal Agent <em>Aurora</em></h2>
+          <p>A living glass sphere orchestrates a living canvas of task nodes with flowing edges. Orbit-wheel menu on desktop, slide-out inspector, radial menu, and ⌘K command bar.</p>
+          <div class="meta">
+            <span>Canvas 2D</span>
+            <span>Living Sphere</span>
+            <span>Orbit Wheel</span>
+            <span>11 Pages</span>
+          </div>
+          <div class="act">
+            <a class="pill pri" href="templates/aurora/overview.html">Launch Aurora Overview →</a>
+            <a class="pill" href="templates/aurora/index.html">Hub Index</a>
+            <a class="pill" href="templates/aurora/tasks.html">Task Graph</a>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <!-- Nine Orbital Rooms Direct Access -->
+    <section class="rooms">
+      <h3>Orbital Deck Rooms</h3>
+      <div class="room-grid">
+        <a class="room-btn" href="templates/orbital/overview.html">
+          <b>01. Overview</b>
+          <span>Hero composer, live ledger, spend</span>
+        </a>
+        <a class="room-btn" href="templates/orbital/tasks.html">
+          <b>02. Tasks</b>
+          <span>Live execution queues, workers</span>
+        </a>
+        <a class="room-btn" href="templates/orbital/operations.html">
+          <b>03. Operations</b>
+          <span>Throughput, error rates, latency</span>
+        </a>
+        <a class="room-btn" href="templates/orbital/local-chat.html">
+          <b>04. Local Chat</b>
+          <span>Direct model conversation</span>
+        </a>
+        <a class="room-btn" href="templates/orbital/fine-tuning.html">
+          <b>05. Fine-Tuning</b>
+          <span>Dataset configuration, runs</span>
+        </a>
+        <a class="room-btn" href="templates/orbital/scheduled.html">
+          <b>06. Scheduled</b>
+          <span>Cron automations, timers</span>
+        </a>
+        <a class="room-btn" href="templates/orbital/memory.html">
+          <b>07. Memory</b>
+          <span>Agent semantic key-value store</span>
+        </a>
+        <a class="room-btn" href="templates/orbital/integrations.html">
+          <b>08. Integrations</b>
+          <span>Ollama, Windows UIA, tools</span>
+        </a>
+        <a class="room-btn" href="templates/orbital/audit.html">
+          <b>09. Audit Trail</b>
+          <span>Forensic execution logs</span>
+        </a>
+      </div>
+    </section>
+
+    <footer>
+      <span>Personal Agent · Autonomous Computer Control Engine</span>
+      <span>Based on futuristic templates by fls-dev</span>
+    </footer>
+  </main>
+</div>
+</body>
 </html>
