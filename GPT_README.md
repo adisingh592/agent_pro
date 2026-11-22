@@ -345,46 +345,55 @@ To be added during Milestones F through H:
 
 ---
 
-## 6. Automated Test Baseline (61 / 61 Tests Passing — 100%)
+## 6. Automated Test Baseline (84 / 84 Tests Passing — 100%)
 
 All features are covered by automated unit and integration tests. **Never commit changes that break any of these tests.**
 
 ```bash
-# 1. Phase 2.3 Windows UI Automation (20 tests)
-python tests/test_phase2_3_windows_ui_automation.py --> 20 / 20 PASSED (OK)
+# 1. Milestone C Desktop Actions & Coordinate Grounding (23 tests)
+python tests/test_milestone_c_desktop_actions.py       --> 23 / 23 PASSED (OK in ~0.01s)
 
-# 2. Phase 2.2.3 Application & Process Control (19 tests)
-python tests/test_phase2_2_3.py   --> 19 / 19 PASSED (OK in ~22s)
+# 2. Phase 2.3 Windows UI Automation Engine (20 tests)
+python tests/test_phase2_3_windows_ui_automation.py    --> 20 / 20 PASSED (OK)
 
-# 3. Phase 2.2.2 File Intelligence & Operations (5 tests)
-python tests/test_phase2_2_2.py   --> 5 / 5 PASSED (OK)
+# 3. Phase 2.2.3 Application & Process Control (19 tests)
+python tests/test_phase2_2_3.py                        --> 19 / 19 PASSED (OK in ~22s)
 
-# 4. Phase 2.2.1 Agent Tool Engine (6 tests)
-python tests/test_phase2_2_1.py   --> 6 / 6 PASSED (OK)
+# 4. Phase 2.2.2 File Intelligence & Operations (5 tests)
+python tests/test_phase2_2_2.py                        --> 5 / 5 PASSED (OK)
 
-# 5. Phase 2.1 Hardware, GPU & Model Streaming (5 tests)
-python tests/test_phase2.py       --> 5 / 5 PASSED (OK)
+# 5. Phase 2.2.1 Agent Tool Engine (6 tests)
+python tests/test_phase2_2_1.py                        --> 6 / 6 PASSED (OK)
 
-# 6. Phase 1 Desktop UI Navigation & Layout (6 tests)
-python tests/test_app.py          --> 6 / 6 PASSED (OK)
+# 6. Phase 2.1 Hardware, GPU & Model Streaming (5 tests)
+python tests/test_phase2.py                            --> 5 / 5 PASSED (OK)
 
-TOTAL: 61 / 61 TESTS PASSING (100% SUCCESS RATE)
+# 7. Phase 1 Desktop UI Navigation & Layout (6 tests)
+python tests/test_app.py                               --> 6 / 6 PASSED (OK)
+
+TOTAL: 84 / 84 TESTS PASSING (100% SUCCESS RATE ACROSS ALL PHASES)
 ```
 
 ---
 
 ## 7. Critical Implementation Insights & Known Gotchas
 
-1. **Tool Confirmation Feedback Loop (Fixed):**
-   - When a tool requires confirmation (e.g. `launch_application`, `close_application`, `copy_file`), the tool result returned to the model must have status `"staged_for_user_approval"` rather than an error string.
-   - If an error string like `"User confirmation required"` is returned, Qwen hallucinated that it lacked desktop capabilities.
+1. **Tool Confirmation Feedback Loop:**
+   - When a tool requires confirmation (e.g. `launch_application`, `close_application`, `copy_file`, `click_at`, `type_desktop_text`), the tool result returned to the model must have status `"staged_for_user_approval"` rather than an error string.
+   - If an error string like `"User confirmation required"` is returned, Qwen hallucinates that it lacks desktop capabilities.
    - The Chat UI renders an amber badge (`🛡️ Action staged: Awaiting user approval`) with `[Approve]` and `[Reject]` buttons. When the user approves, the action executes immediately and posts confirmation.
-2. **Windows Store Python Alias (`WindowsApps\python.exe`):**
+2. **Desktop Coordinate Standardization:**
+   - Always use normalized coordinates `[0, 1000]` when communicating with the LLM or generating action coordinates.
+   - The `coordinate_mapper` handles DPI scaling and multi-monitor virtual bounds conversions automatically.
+3. **Emergency Circuit Breaker:**
+   - Any physical mouse or keyboard action is automatically halted if the cursor hits `(0, 0)` or `<= 5px` (corner slam failsafe).
+   - Calling `trigger_emergency_stop` releases all held mouse buttons and modifier keys immediately.
+4. **Windows Store Python Alias (`WindowsApps\python.exe`):**
    - On Windows 11, running `python.exe` via sandboxed environments can fail with `ResourceUnavailable: The file cannot be accessed by the system` because UWP AppExecutionAlias reparse points require full filesystem access.
    - Always run commands in standard mode first, and if UWP reparse fails, elevate with `BypassSandbox: true`.
-3. **PowerShell Command Chaining:**
+5. **PowerShell Command Chaining:**
    - On Windows PowerShell, chaining commands with `&&` fails on older PS versions. Always use `;` to chain commands reliably (e.g. `cmd1 ; cmd2`).
-4. **VRAM Boundary Protection:**
+6. **VRAM Boundary Protection:**
    - RTX 3050 has 6144 MiB physical VRAM. Ollama uses ~4218 MiB for `qwen3:8b` (`num_ctx: 4096`). Windows Desktop Window Manager (DWM) uses ~800 MiB.
    - Free headroom is ~1126 MiB. Do **not** load heavy vision models into GPU memory. Visual automation must use remote APIs or quantized CPU inference.
 
@@ -398,16 +407,18 @@ The project is structured into distinct, sequential milestones. **Do not jump ah
   - Reference analysis of WindowsAgent, UI-TARS Desktop, and AutoGUI.
   - 5-level interaction hierarchy & 4-tier safety model.
   - ReAct execution specifications (`docs/`).
-- [ ] **Milestone B: Windows UI Automation Backend** *(NEXT STAGED)*
-  - Implement `app/automation/uia/`: `uia_backend.py`, `tree_inspector.py`, `element_grounder.py`.
-  - Native UI Automation tree traversal, accessibility pattern invocation (`InvokePattern`, `ValuePattern`).
-  - Resilient to DPI and screen coordinate changes without VRAM usage.
-- [ ] **Milestone C: Desktop Actions & Coordinate Grounding**
-  - Implement `app/automation/actions/`: `input_simulator.py`, `window_manager.py`.
-  - Normalized `[0, 1000]` coordinate mapping, Win32 `SendInput`, PyAutoGUI corner failsafe.
-- [ ] **Milestone D: Browser Automation Backend**
+- [x] **Milestone B / Phase 2.3: Windows UI Automation Engine** *(COMPLETE & COMMITTED)*
+  - Implemented `app/automation/`: `window_manager.py`, `element_inspector.py`, `element_finder.py`, `action_executor.py`, `windows_automation.py`.
+  - Native UI Automation tree traversal, accessibility pattern invocation (`InvokePattern`, `ValuePattern`, `TogglePattern`).
+  - 9 tools registered, key allowlists, disabled control protection.
+- [x] **Milestone C: Desktop Actions & Coordinate Grounding** *(COMPLETE & COMMITTED)*
+  - Implemented `app/automation/actions/`: `action_models.py`, `coordinate_mapper.py`, `emergency_stop.py`, `input_simulator.py`.
+  - Normalized `[0, 1000]` coordinate mapping, multi-monitor virtual screen geometry, DPI scaling.
+  - Physical mouse moves, clicks, double-clicks, drags, scrolls, typing without auto-Enter.
+  - Emergency stop circuit breaker, `(0, 0)` corner slam failsafe, 11 tools registered.
+- [ ] **Milestone D: Browser Automation Backend** *(NEXT STAGED)*
   - Implement `app/automation/browser/`: `browser_controller.py`, `dom_locator.py`.
-  - Playwright integration, semantic DOM locators, network idle synchronization.
+  - Playwright integration, semantic DOM locators, network idle synchronization, form automation.
 - [ ] **Milestone E: Visual & OCR Fallback Engine**
   - Implement `app/automation/visual/`: `screen_capture.py`, `visual_grounder.py`, `ocr_engine.py`.
   - Configurable remote/CPU VLM interface, Windows Media OCR text bounding box centroids.
@@ -430,7 +441,18 @@ The project is structured into distinct, sequential milestones. **Do not jump ah
 
 When continuing work on this repository:
 1. **Read this file first (`GPT_README.md`)** to get the full picture.
-2. **Current State:** Milestone A is 100% complete. We are ready to begin **Milestone B (Windows UI Automation Backend)** upon user confirmation.
-3. **Execution Invariant:** Always write code that is modular, beginner-readable, PEP8-compliant, and fully typed (`typing.Optional`, `typing.Any`, etc.).
-4. **Testing Invariant:** Always run the test suite (`python tests/test_phase2_2_3.py`) to verify zero regressions.
-5. **UI Invariant:** Never modify the existing PySide6 theme colors or remove existing pages. All additions integrate smoothly into the existing layout.
+2. **Current State:** Milestones A, B (Phase 2.3), and C are **100% complete and verified** with 84 / 84 passing tests.
+3. **Next Step:** We are ready to begin **Milestone D (Browser Automation Backend)** upon user confirmation.
+4. **All 44 Available Tools by Category:**
+   - **System Tools (3, Auto-Approved):** `get_current_time`, `get_system_info`, `get_gpu_info`.
+   - **File Intelligence (7, Auto-Approved):** `search_files`, `list_directory`, `get_file_info`, `read_text_file`, `find_recent_files`, `find_large_files`, `organize_files_preview`.
+   - **File Operations (5, Confirmation Required):** `copy_file`, `move_file`, `rename_file`, `create_directory`, `organize_files`.
+   - **App Intelligence & Processes (5, Auto-Approved):** `search_applications`, `list_installed_applications`, `list_running_processes`, `check_application_status`, `get_process_info`.
+   - **App & Process Actions (4, Confirmation Required):** `launch_application`, `open_file_with_application`, `open_folder`, `close_application`.
+   - **UI Automation (6, Auto-Approved):** `list_windows`, `get_active_window`, `inspect_window`, `find_ui_element`, `read_ui_element`, `focus_window`.
+   - **UI Automation Actions (3, Confirmation Required):** `click_ui_element`, `type_into_ui_element`, `press_key`.
+   - **Desktop Coordinate & Emergency (2, Auto-Approved):** `get_screen_metrics`, `trigger_emergency_stop`.
+   - **Desktop Physical Actions (9, Confirmation Required):** `move_mouse`, `click_at`, `double_click_at`, `right_click_at`, `drag_mouse`, `scroll_at`, `type_desktop_text`, `press_desktop_key`, `reset_emergency_stop`.
+5. **Execution Invariant:** Always write code that is modular, beginner-readable, PEP8-compliant, and fully typed (`typing.Optional`, `typing.Any`, etc.).
+6. **Testing Invariant:** Always run the test suite to verify zero regressions before committing.
+7. **UI Invariant:** Never modify the existing PySide6 theme colors or remove existing pages. All additions integrate smoothly into the existing layout.

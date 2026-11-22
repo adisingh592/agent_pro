@@ -879,7 +879,68 @@ CREATE TABLE IF NOT EXISTS activity_logs (
 
 ## 🧪 Verification & Benchmark Tests
 
-### 1. Phase 2.2.3 Application & Process Control Suite
+### 1. Milestone C Desktop Actions & Coordinate Grounding Suite
+```bash
+python tests/test_milestone_c_desktop_actions.py
+```
+**Test Results (23 / 23 Tests Passed — 100%)**:
+```text
+Ran 23 tests in 0.006s — OK (100% Success Rate)
+[1/23]  test_screen_metrics                     --> PASSED (Resolution, multi-monitor bounds, DPI scale)
+[2/23]  test_normalized_to_actual_center        --> PASSED (Norm (500, 500) -> Actual (960, 540))
+[3/23]  test_normalized_to_actual_corners       --> PASSED (Norm (0, 0) and (1000, 1000) mapped correctly)
+[4/23]  test_actual_to_normalized               --> PASSED (Pixel (960, 540) -> Norm (500, 500))
+[5/23]  test_out_of_bounds_rejection            --> PASSED (Rejected coordinates outside [0, 1000])
+[6/23]  test_clamp_to_screen                    --> PASSED (Clamped coordinates to virtual display rect)
+[7/23]  test_initial_state_inactive             --> PASSED (Emergency stop default inactive)
+[8/23]  test_trigger_emergency_stop             --> PASSED (Latching circuit breaker and input release)
+[9/23]  test_failsafe_corner_detection          --> PASSED (Corner slam (0,0) immediately triggers abort)
+[10/23] test_reset_emergency_stop               --> PASSED (Deliberate reset restores readiness)
+[11/23] test_move_mouse_normalized              --> PASSED (Normalized cursor positioning)
+[12/23] test_click_mouse                        --> PASSED (Dispatched left, right, middle clicks)
+[13/23] test_scroll_mouse                       --> PASSED (Vertical & horizontal scroll ticks)
+[14/23] test_type_text                          --> PASSED (Simulated keyboard input without auto-Enter)
+[15/23] test_press_safe_key                     --> PASSED (Approved safe keys and combinations)
+[16/23] test_blocked_unapproved_key             --> PASSED (Unvalidated keys rejected KEY_NOT_ALLOWED)
+[17/23] test_actions_blocked_during_stop        --> PASSED (All actions blocked during emergency stop)
+[18/23] test_tools_registered                   --> PASSED (All 11 desktop action tools registered)
+[19/23] test_screen_metrics_auto_approved       --> PASSED (Read-only display metrics auto-approved)
+[20/23] test_emergency_stop_auto_approved       --> PASSED (Instant emergency stop trigger auto-approved)
+[21/23] test_mutating_action_requires_confirm   --> PASSED (Mutating click stages for approval card)
+[22/23] test_type_text_requires_confirmation    --> PASSED (Typing stages for approval card)
+[23/23] test_confirmed_action_executes          --> PASSED (User-confirmed physical actions execute)
+```
+
+### 2. Phase 2.3 Windows UI Automation Engine Suite
+```bash
+python tests/test_phase2_3_windows_ui_automation.py
+```
+**Test Results (20 / 20 Tests Passed — 100%)**:
+```text
+Ran 20 tests in 0.002s — OK (100% Success Rate)
+[1/20]  test_list_windows_returns_structured_data --> PASSED (Valid WindowInfo list)
+[2/20]  test_list_windows_respects_max_results    --> PASSED (Limits results count)
+[3/20]  test_get_active_window                    --> PASSED (Current foreground window)
+[4/20]  test_find_window_nonexistent_returns_none --> PASSED (Graceful missing window handling)
+[5/20]  test_inspect_window_nonexistent           --> PASSED (Graceful inspection failure)
+[6/20]  test_compact_observation_generation      --> PASSED (Compact LLM tree format)
+[7/20]  test_element_matching_logic_mocked        --> PASSED (Exact, substring, fuzzy, ambiguity)
+[8/20]  test_find_element_in_nonexistent_window   --> PASSED (Proper error payload)
+[9/20]  test_action_executor_disabled_protection  --> PASSED (Rejects clicking disabled controls)
+[10/20] test_read_element_sensitive_masking       --> PASSED (Automatic password masking)
+[11/20] test_controlled_action_requires_confirm   --> PASSED (Click/type staged for confirmation)
+[12/20] test_safe_keys_recognized                 --> PASSED (Allowlist recognition)
+[13/20] test_key_allowlist_enforcement            --> PASSED (Blocks unauthorized keys)
+[14/20] test_phase2_3_tools_registered            --> PASSED (All 9 UI tools registered)
+[15/20] test_read_only_tools_auto_approved        --> PASSED (Auto-approves read-only tools)
+[16/20] test_list_windows_executor_execution      --> PASSED (Runs through ToolExecutor pipeline)
+[17/20] test_get_active_window_executor_execution --> PASSED (Runs through ToolExecutor pipeline)
+[18/20] test_click_ui_element_requires_confirm    --> PASSED (Staged ConfirmationCardWidget)
+[19/20] test_press_key_requires_confirm           --> PASSED (Staged ConfirmationCardWidget)
+[20/20] test_find_window_exact_and_substring      --> PASSED (Window title matching)
+```
+
+### 3. Phase 2.2.3 Application & Process Control Suite
 ```bash
 python tests/test_phase2_2_3.py
 ```
@@ -910,39 +971,31 @@ OK
 [19/19] test_list_running_processes_executor_execution    --> PASSED (Executed through ToolExecutor pipeline)
 ```
 
-### 2. Phase 2.2.2 File Intelligence & Operations Suite
+### 4. Phase 2.2.2 File Intelligence & Operations Suite
 ```bash
 python tests/test_phase2_2_2.py
 ```
-**Test Results (5 / 5 Tests Passed — 100%)**:
-```text
-========================================================
- ALL PHASE 2.2.2 TESTS PASSED SUCCESSFULLY! (5/5)       
-========================================================
-[1/5] Testing Filesystem Safety & Path Boundaries... --> PASSED (Blocked Windows, System32, traversal)
-[2/5] Testing Read-Only File Tools...                --> PASSED (search, list, metadata, text read, recent, large)
-[3/5] Testing Modifications & Verification...        --> PASSED (copy, move, rename, mkdir with verification)
-[4/5] Testing Smart File Organization...             --> PASSED (preview & confirmed typed sorting)
-[5/5] Testing Database Audit Logging...              --> PASSED (logged with confirmed status & duration)
-```
+*(Verifies filesystem boundaries, search, read, copy, move, rename, directory creation, smart organization — 5/5 PASSED).*
 
-### 3. Phase 2.2.1 Agent Tool Engine Suite
+### 5. Phase 2.2.1 Agent Tool Engine Suite
 ```bash
 python tests/test_phase2_2_1.py
 ```
 *(Verifies tool registration, JSON schema validation, permissions, 3 safe built-in tools, and live multi-round agent loop with Ollama `qwen3:8b` — 6/6 PASSED).*
 
-### 4. Phase 2.1 Hardware & GPU Benchmark Suite
+### 6. Phase 2.1 Hardware & GPU Benchmark Suite
 ```bash
 python tests/test_phase2.py
 ```
 *(Verifies Ollama connectivity, `qwen3:8b` detection, RTX 3050 GPU monitoring, and 18.3–20.4 tokens/s streaming — 5/5 PASSED).*
 
-### 5. Phase 1 UI & Regression Suite
+### 7. Phase 1 UI & Regression Suite
 ```bash
 python tests/test_app.py
 ```
 *(Verifies all 11 pages, sidebar navigation, window resizing, and theme consistency — 6/6 PASSED).*
+
+**TOTAL: 84 / 84 TESTS PASSING (100% SUCCESS RATE ACROSS ALL PHASES)**
 
 ---
 
@@ -953,11 +1006,20 @@ python tests/test_app.py
 - [x] **Phase 2.2.1: Agent Tool Engine** (Complete)
 - [x] **Phase 2.2.2: File Intelligence & Safe File Operations** (Complete)
 - [x] **Phase 2.2.3: Application & Process Control** (Complete)
-- [ ] **Phase 3: Coding IDE & Automation Engine** (Next Staged)
-  - Monaco Editor / QScintilla code editor integration with syntax highlighting.
-  - Project directory explorer tree with file editing capabilities.
-  - Interactive embedded terminal session.
-  - Visual node-based workflow execution engine.
-- [ ] **Phase 4: Multimodal Voice & Autonomous Desktop Control**
-  - Offline local Whisper speech-to-text and Piper TTS voice feedback.
-  - Autonomous multi-step workflow planner with state verification.
+- [x] **Milestone A: Architecture & Safety Specification** (Complete)
+- [x] **Phase 2.3 / Milestone B: Windows UI Automation Engine** (Complete)
+- [x] **Milestone C: Desktop Actions & Coordinate Grounding** (Complete)
+- [ ] **Milestone D: Browser Automation Backend** (Next Staged)
+  - Playwright / Chrome DevTools Protocol integration.
+  - Semantic DOM locators, network idle synchronization, form automation.
+- [ ] **Milestone E: Visual & OCR Fallback Engine**
+  - Configurable lightweight VLM interface.
+  - Windows Media OCR / Tesseract fallback for canvas/Direct3D apps.
+- [ ] **Milestone F: Autonomous Task Execution Engine**
+  - Observe-Ground-Act-Verify ReAct loop, dynamic TaskPlanner.
+- [ ] **Milestone G: Safety, Scoping & Human Oversight**
+  - Application scoping, dry-run simulation mode, emergency abort (`Ctrl+Alt+X`).
+- [ ] **Milestone H: Skill Memory & Trajectory Replay**
+  - Parameterized skill storage, zero-LLM fast-path replay.
+- [ ] **Milestone I: Desktop UI Integration & End-to-End Testing**
+  - Live execution cards, step-by-step progress drawer, abort button.
