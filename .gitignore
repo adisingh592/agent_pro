@@ -42,3 +42,12 @@ logs/*.log
 *.swo
 .DS_Store
 Thumbs.db
+
+# Node.js & Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Tauri 2
+src-tauri/target/
