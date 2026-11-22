@@ -222,37 +222,17 @@ h:\pro agent\
 │   │   ├── __init__.py
 │   │   ├── app_discovery.py       # Registry & Start Menu application scanner (cached)
 │   │   ├── app_resolver.py        # Natural language alias & fuzzy resolver
-│   │   ├── app_tools.py           # Phase 2.2.3 application & process control tools
-│   │   ├── built_in_tools.py      # Time, system info, GPU info tools
-│   │   ├── desktop_action_tools.py# Milestone C Desktop Actions (11 tools)
+│   │   ├── app_tools.py           # Phase 2.2.3 application & process control tools (9 tools)
+│   │   ├── built_in_tools.py      # Time, system info, GPU info tools (3 tools)
+│   │   ├── desktop_action_tools.py# Milestone C Desktop Actions & Coordinates (11 tools)
 │   │   ├── file_security.py       # Phase 2.2.2 filesystem boundary enforcer
-│   │   ├── file_tools.py          # Phase 2.2.2 file search, read, copy, move, organize
+│   │   ├── file_tools.py          # Phase 2.2.2 file search, read, copy, move, organize (12 tools)
 │   │   ├── process_manager.py     # psutil process listing, status & graceful termination
 │   │   ├── tool_executor.py       # 5-stage execution runner with timeout & timing
 │   │   ├── tool_permissions.py    # Permission policies & confirmation requirements
-│   │   ├── tool_registry.py       # In-memory tool registration catalog
+│   │   ├── tool_registry.py       # In-memory tool registration catalog (44 tools registered)
 │   │   ├── tool_validator.py      # JSON Schema argument validation
-│   │   └── ui_automation_tools.py # Phase 2.3 Windows UI Automation tool handlers
-│   └── ui/
-│   │   ├── model_manager.py       # Ollama discovery, health & model parameters
-│   │   ├── ollama_client.py       # Low-level HTTP client for Ollama API
-│   │   └── task_manager.py        # Task queuing and execution state
-│   ├── database/
-│   │   ├── __init__.py
-│   │   └── database.py            # SQLite schema initialization & repository methods
-│   ├── tools/
-│   │   ├── __init__.py
-│   │   ├── app_discovery.py       # Registry & Start Menu application scanner (cached)
-│   │   ├── app_resolver.py        # Natural language alias & fuzzy resolver
-│   │   ├── app_tools.py           # Phase 2.2.3 application & process control tools
-│   │   ├── built_in_tools.py      # Time, system info, GPU info tools
-│   │   ├── file_security.py       # Phase 2.2.2 filesystem boundary enforcer
-│   │   ├── file_tools.py          # Phase 2.2.2 file search, read, copy, move, organize
-│   │   ├── process_manager.py     # psutil process listing, status & graceful termination
-│   │   ├── tool_executor.py       # 5-stage execution runner with timeout & timing
-│   │   ├── tool_permissions.py    # Permission policies & confirmation requirements
-│   │   ├── tool_registry.py       # In-memory tool registration catalog
-│   │   └── tool_validator.py      # JSON Schema argument validation
+│   │   └── ui_automation_tools.py # Phase 2.3 Windows UI Automation tool handlers (9 tools)
 │   └── ui/
 │       ├── __init__.py
 │       ├── main_window.py         # PySide6 MainWindow (Sidebar + Stack + Right Panel)
@@ -283,14 +263,15 @@ h:\pro agent\
 │   ├── AUTONOMOUS_TASK_EXECUTION.md
 │   ├── COMPUTER_AUTOMATION_ARCHITECTURE.md
 │   ├── REFERENCE_REPOSITORY_ANALYSIS.md
-│   └── SAFETY_MODEL.md
+│   └── SAFETY_MODEL.md            # 4-tier safety model + Milestone C safety invariants
 ├── tests/
 │   ├── test_app.py                # Phase 1 UI navigation & resize tests (6/6 pass)
 │   ├── test_phase2.py             # Phase 2.1 Ollama & GPU benchmark tests (5/5 pass)
 │   ├── test_phase2_2_1.py         # Phase 2.2.1 Tool engine unit tests (6/6 pass)
 │   ├── test_phase2_2_2.py         # Phase 2.2.2 File intelligence tests (5/5 pass)
 │   ├── test_phase2_2_3.py         # Phase 2.2.3 App & process control tests (19/19 pass)
-│   └── test_phase2_3_windows_ui_automation.py # Phase 2.3 Windows UI Automation tests (20/20 pass)
+│   ├── test_phase2_3_windows_ui_automation.py # Phase 2.3 Windows UI Automation tests (20/20 pass)
+│   └── test_milestone_c_desktop_actions.py    # Milestone C Desktop Actions tests (23/23 pass)
 ├── main.py                        # Application entry point
 ├── run_agent.bat                  # Windows launch script
 ├── README.md                      # Primary repository documentation
