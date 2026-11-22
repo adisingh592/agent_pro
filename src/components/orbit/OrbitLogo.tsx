@@ -18,10 +18,10 @@ export const OrbitLogo: React.FC<OrbitLogoProps> = ({
     >
       {glow && (
         <div
-          className="absolute inset-0 rounded-full blur-md opacity-70 pointer-events-none"
+          className="absolute inset-0 rounded-full blur-md opacity-75 pointer-events-none"
           style={{
             background:
-              "radial-gradient(circle, rgba(155, 227, 74, 0.45) 0%, rgba(155, 227, 74, 0) 70%)",
+              "radial-gradient(circle, rgba(155, 227, 74, 0.5) 0%, rgba(155, 227, 74, 0) 70%)",
           }}
         />
       )}
@@ -34,23 +34,23 @@ export const OrbitLogo: React.FC<OrbitLogoProps> = ({
         className="relative z-10"
       >
         <defs>
-          <linearGradient id="orbit-logo-grad" x1="6" y1="42" x2="42" y2="6" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#66B83D" />
+          <linearGradient id="orbit-logo-grad" x1="8" y1="40" x2="40" y2="8" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#5EA832" />
             <stop offset="50%" stopColor="#9BE34A" />
-            <stop offset="100%" stopColor="#C5FF67" />
+            <stop offset="100%" stopColor="#D5FF6E" />
           </linearGradient>
-          <filter id="logo-glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="0" stdDeviation="2.5" floodColor="#9BE34A" floodOpacity="0.6" />
+          <filter id="logo-glow-filter" x="-25%" y="-25%" width="150%" height="150%">
+            <feDropShadow dx="0" dy="0" stdDeviation="2.5" floodColor="#9BE34A" floodOpacity="0.7" />
           </filter>
         </defs>
-        {/* Modern organic loop/leaf icon from reference */}
+        {/* Exact tilted organic ribbon/leaf loop from reference image */}
         <path
-          d="M12 28C9 23 10 14 17 9C23 5 33 6 39 12C43 16 43 24 37 31C31 38 22 41 15 39C10 38 13 32 17 29C23 25 31 22 34 17C35 15 32 12 28 12C21 12 15 18 13 24C12 26 12 27 12 28Z"
+          d="M 14 30 C 9 24 10 15 17 10 C 23 5 33 6 39 12 C 44 17 44 26 37 32 C 30 39 20 41 14 38 C 11 36 13 31 17 29 C 23 26 31 22 34 17 C 35 15 32 12 28 12 C 21 12 16 19 14 25 Z"
           stroke="url(#orbit-logo-grad)"
           strokeWidth="3.6"
           strokeLinecap="round"
           strokeLinejoin="round"
-          filter="url(#logo-glow)"
+          filter="url(#logo-glow-filter)"
         />
       </svg>
     </div>

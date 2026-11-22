@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Sparkles, Paperclip, Mic, ArrowRight } from "lucide-react";
+import { Paperclip, Mic, ArrowRight } from "lucide-react";
 
 interface CommandInputProps {
   onSubmit: (prompt: string) => void;
@@ -30,34 +30,36 @@ export const CommandInput: React.FC<CommandInputProps> = ({
   };
 
   return (
-    <div className={`relative w-full max-w-2xl z-30 select-none ${className}`}>
+    <div className={`relative w-[760px] max-w-[92vw] z-30 select-none ${className}`}>
       {/* Intense Glowing Backlight Underneath */}
       <div
-        className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-[85%] h-10 rounded-full blur-xl transition-all duration-300 pointer-events-none ${
-          isFocused ? "opacity-90 scale-105" : "opacity-60"
+        className={`absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-[460px] h-4 rounded-full blur-[20px] transition-all duration-300 pointer-events-none ${
+          isFocused ? "opacity-100 scale-105" : "opacity-85"
         }`}
         style={{
-          background: "radial-gradient(ellipse at center, rgba(155, 227, 74, 0.75) 0%, rgba(100, 180, 50, 0.25) 60%, transparent 80%)",
+          background: "radial-gradient(ellipse at center, #9BE34A 0%, rgba(155, 227, 74, 0.7) 45%, transparent 80%)",
         }}
       />
 
-      {/* Main Pill Floating Form */}
+      {/* Main Pill Floating Form matching reference */}
       <form
         onSubmit={handleSubmit}
-        className={`relative flex items-center h-14 md:h-15 px-4 rounded-full transition-all duration-300
-          bg-[#07130A]/90 backdrop-blur-2xl border
+        className={`relative flex items-center h-14 md:h-[58px] px-5 rounded-full transition-all duration-300
+          bg-[#07140B]/90 backdrop-blur-2xl border
           ${isFocused 
-            ? "border-[#9BE34A] shadow-[0_0_25px_rgba(155,227,74,0.35)]" 
-            : "border-[rgba(156,190,153,0.22)] hover:border-[rgba(155,227,74,0.4)] shadow-[0_10px_35px_rgba(0,0,0,0.6)]"
+            ? "border-[#9BE34A] shadow-[0_0_28px_rgba(155,227,74,0.4)]" 
+            : "border-[rgba(155,227,74,0.45)] hover:border-[#9BE34A] shadow-[0_12px_40px_rgba(0,0,0,0.6)]"
           }`}
       >
-        {/* Left Four-pointed Star / Sparkle Icon */}
-        <div className="flex items-center pl-1 pr-3 text-[#C5FF67] shrink-0">
-          <Sparkles className="w-5 h-5 drop-shadow-[0_0_10px_rgba(155,227,74,0.8)]" />
+        {/* Left Four-pointed Star Sparkle Icon matching reference */}
+        <div className="flex items-center pl-0.5 pr-3 text-[#E2FF85] shrink-0">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" />
+          </svg>
         </div>
 
-        {/* Vertical subtle divider */}
-        <div className="w-[1px] h-5 bg-[rgba(156,190,153,0.2)] mr-3 shrink-0" />
+        {/* Vertical thin separator */}
+        <div className="w-[1px] h-5 bg-[rgba(156,190,153,0.3)] mr-3 shrink-0" />
 
         {/* Text Input */}
         <input
@@ -68,16 +70,16 @@ export const CommandInput: React.FC<CommandInputProps> = ({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
-          className="flex-1 bg-transparent text-sm md:text-[15px] text-[#F1F5ED] placeholder:text-[#6F796F] outline-none border-none focus:ring-0 focus:outline-none"
+          className="flex-1 bg-transparent text-sm md:text-[15px] text-white placeholder:text-[#7A8B7A] outline-none border-none focus:ring-0 focus:outline-none"
         />
 
         {/* Action Buttons Right */}
-        <div className="flex items-center gap-2 pl-2 shrink-0">
+        <div className="flex items-center gap-2 pl-3 shrink-0">
           {/* Attachment Paperclip */}
           <button
             type="button"
             title="Attach file or context"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[#A4ADA2] hover:text-[#F1F5ED] hover:bg-[rgba(156,190,153,0.12)] transition-colors"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-[#B4C2B3] hover:text-white hover:bg-[rgba(156,190,153,0.15)] transition-colors cursor-pointer"
           >
             <Paperclip className="w-4 h-4" />
           </button>
@@ -86,20 +88,20 @@ export const CommandInput: React.FC<CommandInputProps> = ({
           <button
             type="button"
             title="Voice input"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[#A4ADA2] hover:text-[#F1F5ED] hover:bg-[rgba(156,190,153,0.12)] transition-colors"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-[#B4C2B3] hover:text-white hover:bg-[rgba(156,190,153,0.15)] transition-colors cursor-pointer"
           >
             <Mic className="w-4 h-4" />
           </button>
 
-          {/* Send Circular Button in Lime Accent */}
+          {/* Send Circular Button in Vibrant Lime Accent */}
           <button
             type="submit"
             disabled={!value.trim()}
             title="Send instruction to Personal Agent"
-            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200
+            className={`w-[36px] h-[36px] rounded-full flex items-center justify-center transition-all duration-200
               ${value.trim()
-                ? "bg-[#9BE34A] text-[#050907] hover:bg-[#C5FF67] hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(155,227,74,0.5)] cursor-pointer"
-                : "bg-[#9BE34A]/80 text-[#050907]/70 cursor-pointer"
+                ? "bg-[#9BE34A] text-[#050907] hover:bg-[#C5FF67] hover:scale-105 active:scale-95 shadow-[0_0_16px_rgba(155,227,74,0.6)] cursor-pointer"
+                : "bg-[#9BE34A] text-[#050907] opacity-90 cursor-pointer"
               }`}
           >
             <ArrowRight className="w-4 h-4 stroke-[2.5]" />

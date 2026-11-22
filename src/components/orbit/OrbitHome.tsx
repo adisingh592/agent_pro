@@ -26,7 +26,7 @@ export const OrbitHome: React.FC<OrbitHomeProps> = ({
       {/* 1. Atmospheric Mountain Landscape & Star Background */}
       <OrbitBackground />
 
-      {/* 2. Concentric Orbital Paths & Glowing Nodes */}
+      {/* 2. Concentric Orbital Paths & 8 Glowing Nodes */}
       <OrbitPaths />
 
       {/* 3. Top Minimal Transparent Bar */}
@@ -42,11 +42,12 @@ export const OrbitHome: React.FC<OrbitHomeProps> = ({
           {/* Left Column of Floating Cards (Curved along orbital ring) */}
           <div className="flex flex-col gap-6 md:gap-7 items-end">
             {/* Top-Left: IDE */}
-            <div className="translate-x-4 md:translate-x-8">
+            <div className="translate-x-3 md:translate-x-6">
               <NavigationPanel
                 id="panel-ide"
                 title="IDE"
-                subtitle="Code, run and build with your agent"
+                subtitleLine1="Code, run and build"
+                subtitleLine2="with your agent"
                 icon={Code2}
                 onClick={() => onNavigate("ide")}
               />
@@ -57,18 +58,20 @@ export const OrbitHome: React.FC<OrbitHomeProps> = ({
               <NavigationPanel
                 id="panel-agent"
                 title="Agent"
-                subtitle="Autonomous tasks, planning and execution"
+                subtitleLine1="Autonomous tasks,"
+                subtitleLine2="planning and execution"
                 icon={Layers}
                 onClick={() => onNavigate("computer")}
               />
             </div>
 
             {/* Bottom-Left: Skills */}
-            <div className="translate-x-4 md:translate-x-8">
+            <div className="translate-x-3 md:translate-x-6">
               <NavigationPanel
                 id="panel-skills"
                 title="Skills"
-                subtitle="Tools, integrations and capabilities"
+                subtitleLine1="Tools, integrations"
+                subtitleLine2="and capabilities"
                 icon={LayoutGrid}
                 onClick={() => onNavigate("skills")}
               />
@@ -83,11 +86,12 @@ export const OrbitHome: React.FC<OrbitHomeProps> = ({
           {/* Right Column of Floating Cards (Curved along orbital ring) */}
           <div className="flex flex-col gap-6 md:gap-7 items-start">
             {/* Top-Right: Automation */}
-            <div className="-translate-x-4 md:-translate-x-8">
+            <div className="-translate-x-3 md:-translate-x-6">
               <NavigationPanel
                 id="panel-automation"
                 title="Automation"
-                subtitle="Create and run automated workflows"
+                subtitleLine1="Create and run"
+                subtitleLine2="automated workflows"
                 icon={Zap}
                 onClick={() => onNavigate("automation")}
               />
@@ -98,18 +102,20 @@ export const OrbitHome: React.FC<OrbitHomeProps> = ({
               <NavigationPanel
                 id="panel-history"
                 title="History"
-                subtitle="Conversations, actions and past executions"
+                subtitleLine1="Conversations, actions"
+                subtitleLine2="and past executions"
                 icon={Clock}
                 onClick={() => onNavigate("activity")}
               />
             </div>
 
             {/* Bottom-Right: Settings */}
-            <div className="-translate-x-4 md:-translate-x-8">
+            <div className="-translate-x-3 md:-translate-x-6">
               <NavigationPanel
                 id="panel-settings"
                 title="Settings"
-                subtitle="Models, permissions and system configuration"
+                subtitleLine1="Models, permissions"
+                subtitleLine2="and system configuration"
                 icon={Settings}
                 onClick={() => onNavigate("settings")}
               />
