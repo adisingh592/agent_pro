@@ -18,14 +18,19 @@ J.shell=function(title){
  b.insertAdjacentHTML('afterbegin','<div class="aurora" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="dots" aria-hidden="true"></div><div class="vignette" aria-hidden="true"></div>');
  b.insertAdjacentHTML('beforeend','<div class="grain" aria-hidden="true"></div>');
  const t=document.createElement('header');t.className='topbar';
- t.innerHTML=`<a class="crumb g3" href="index.html" title="All screens"><span class="mo"></span>jarvis <span>/</span> ${title}</a>
-  <div class="status g3"><span><span class="dot"></span><b>SYS</b> online</span><i></i><span>UTC <b id="utc">00:00:00</b></span><i class="opt"></i><span class="opt">OPS <b>1</b></span><i></i><span>Link <b>active</b></span></div>
+ t.innerHTML=`<div class="g3" style="gap:10px">
+  <a class="crumb g3" href="../../index.html" title="Main Hub"><span class="mo"></span><b>Personal Agent</b></a>
+  <span style="opacity:.3">/</span>
+  <span class="crumb g3" style="color:var(--ink-2)">${title}</span>
+ </div>
+  <div class="status g3"><span><span class="dot"></span><b>SYS</b> online</span><i></i><span>Windows <b>11</b></span><i class="opt"></i><span class="opt">GPU <b>RTX 3050</b></span><i></i><span>Ollama <b>ready</b></span></div>
   <button class="kbtn g3" id="kOpen" aria-label="Command palette">${ico('search',16)}<span class="t">Ask or jump</span><kbd>⌘K</kbd></button>
   <button class="bell g3" aria-label="Notifications">${ico('bell',18)}<i></i></button>
+  <a class="btn btn-glass" style="height:42px;display:inline-flex;align-items:center;padding:0 16px;text-decoration:none" href="../../index.html" aria-label="Return to Main Hub">Main Hub</a>
   <button class="btn btn-pri" style="height:42px" id="newTask" aria-label="New task">${ico('plus',16,2.2)}<span class="t">New task</span></button>
-  <div class="avatar">AM</div>`;
+  <div class="avatar">PA</div>`;
  b.appendChild(t);
- const tick=()=>{const d=new Date();$('#utc').textContent=`${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`};tick();setInterval(tick,1000);
+ const tick=()=>{const d=new Date();const h=String(d.getHours()).padStart(2,'0'),m=String(d.getMinutes()).padStart(2,'0'),s=String(d.getSeconds()).padStart(2,'0');};tick();
  $('#newTask').onclick=()=>location.href='overview.html#ask';
  J.nav.wheel();J.nav.dock();J.palette();$('#kOpen').onclick=()=>J.palette.open();
  const ins=$('aside.inspector');if(ins)J.inspector(ins);
