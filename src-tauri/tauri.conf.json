@@ -5,7 +5,7 @@
   "identifier": "com.personalagent.desktop",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:1420",
+    "devUrl": "http://localhost:1420/templates/aurora/overview.html",
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },

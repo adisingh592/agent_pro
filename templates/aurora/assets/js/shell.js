@@ -19,14 +19,14 @@ J.shell=function(title){
  b.insertAdjacentHTML('beforeend','<div class="grain" aria-hidden="true"></div>');
  const t=document.createElement('header');t.className='topbar';
  t.innerHTML=`<div class="g3" style="gap:10px">
-  <a class="crumb g3" href="../../index.html" title="Main Hub"><span class="mo"></span><b>Personal Agent</b></a>
+  <a class="crumb g3" href="overview.html" title="Personal Agent Aurora Overview"><span class="mo"></span><b>Personal Agent</b></a>
   <span style="opacity:.3">/</span>
   <span class="crumb g3" style="color:var(--ink-2)">${title}</span>
  </div>
   <div class="status g3"><span><span class="dot"></span><b>SYS</b> online</span><i></i><span>Windows <b>11</b></span><i class="opt"></i><span class="opt">GPU <b>RTX 3050</b></span><i></i><span>Ollama <b>ready</b></span></div>
   <button class="kbtn g3" id="kOpen" aria-label="Command palette">${ico('search',16)}<span class="t">Ask or jump</span><kbd>⌘K</kbd></button>
   <button class="bell g3" aria-label="Notifications">${ico('bell',18)}<i></i></button>
-  <a class="btn btn-glass" style="height:42px;display:inline-flex;align-items:center;padding:0 16px;text-decoration:none" href="../../index.html" aria-label="Return to Main Hub">Main Hub</a>
+  <a class="btn btn-glass" style="height:42px;display:inline-flex;align-items:center;padding:0 16px;text-decoration:none" href="index.html" aria-label="View All Aurora Screens">All Screens</a>
   <button class="btn btn-pri" style="height:42px" id="newTask" aria-label="New task">${ico('plus',16,2.2)}<span class="t">New task</span></button>
   <div class="avatar">PA</div>`;
  b.appendChild(t);

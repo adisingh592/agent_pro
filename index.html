@@ -1,13 +1,52 @@
-<!DOCTYPE html>
-<html lang="en" class="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Personal Agent — Autonomous Control Center</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><radialGradient id='g' cx='.38' cy='.32' r='.7'><stop offset='0' stop-color='%23fff'/><stop offset='.35' stop-color='%239BE34A'/><stop offset='1' stop-color='%23111A14'/></radialGradient></defs><rect width='64' height='64' rx='16' fill='%23050907'/><circle cx='32' cy='32' r='19' fill='url(%23g)'/></svg>">
-  </head>
-  <body class="bg-[#050907] text-[#F1F5ED] antialiased selection:bg-[#9BE34A]/25 selection:text-[#F1F5ED] overflow-hidden">
-    <div id="root" class="h-screen w-screen flex flex-col"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Personal Agent Aurora · Loading</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><radialGradient id='g' cx='.38' cy='.32' r='.7'><stop offset='0' stop-color='%23fff'/><stop offset='.35' stop-color='%23FF4F93'/><stop offset='1' stop-color='%236D4AFF'/></radialGradient></defs><rect width='64' height='64' rx='16' fill='%2305060C'/><circle cx='32' cy='32' r='19' fill='url(%23g)'/></svg>">
+<meta http-equiv="refresh" content="0; url=templates/aurora/overview.html">
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #05060C;
+  color: #EEF0FF;
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  overflow: hidden;
+}
+.dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff, #FF4F93 35%, #6D4AFF 70%, transparent 72%);
+  box-shadow: 0 0 24px rgba(255, 79, 147, 0.7);
+  animation: pulse 1.8s infinite ease-in-out;
+}
+.msg {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(238, 240, 255, 0.7);
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+</style>
+<script>
+window.location.replace("templates/aurora/overview.html");
+</script>
+</head>
+<body>
+<div class="dot" aria-hidden="true"></div>
+<div class="msg">Personal Agent Aurora · Launching Living Canvas</div>
+</body>
 </html>
