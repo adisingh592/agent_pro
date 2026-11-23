@@ -13,6 +13,7 @@ import { SettingsPage } from "../pages/SettingsPage";
 import { IdePage } from "../pages/IdePage";
 import { AutomationPage } from "../pages/AutomationPage";
 import { SkillsPage } from "../pages/SkillsPage";
+import { NineRoomsDeck } from "../components/rooms/NineRoomsDeck";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<NavPage>("orbit");
@@ -24,7 +25,7 @@ export default function App() {
     setCurrentPage("chat");
   };
 
-  // If on Orbit Home, render full-window spatial interface matching reference image
+  // If on Orbit Home, render full-window spatial interface matching reference image (Image 1)
   if (currentPage === "orbit") {
     return (
       <OrbitHome
@@ -34,6 +35,11 @@ export default function App() {
         onModelSelect={setSelectedModel}
       />
     );
+  }
+
+  // If on Nine Rooms Deck, render spatial 9 rooms view matching reference image (Image 2)
+  if (currentPage === "rooms") {
+    return <NineRoomsDeck onNavigate={setCurrentPage} />;
   }
 
   const renderPage = () => {

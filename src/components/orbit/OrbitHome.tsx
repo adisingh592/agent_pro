@@ -34,6 +34,8 @@ export const OrbitHome: React.FC<OrbitHomeProps> = ({
         modelName={modelName}
         onModelSelect={onModelSelect}
         onNavigateHome={() => onNavigate("orbit")}
+        onNavigate={onNavigate}
+        currentPage="orbit"
       />
 
       {/* 4. Center Spatial Playground (Core + 6 Floating Curved Navigation Cards) */}

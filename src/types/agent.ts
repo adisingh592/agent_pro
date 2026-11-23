@@ -1,5 +1,6 @@
 export type NavPage =
   | "orbit"
+  | "rooms"
   | "chat"
   | "computer"
   | "applications"

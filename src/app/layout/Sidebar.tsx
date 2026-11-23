@@ -24,6 +24,7 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate }) => {
   const mainNavItems: { id: NavPage; label: string; icon: React.ReactNode }[] = [
     { id: "orbit", label: "Orbit Home", icon: <OrbitLogo size={18} glow={false} /> },
+    { id: "rooms", label: "Nine Rooms Deck", icon: <Sparkles className="w-4 h-4 text-[#8BE9FF]" /> },
     { id: "chat", label: "Chat Assistant", icon: <MessageSquare className="w-4 h-4" /> },
     { id: "ide", label: "IDE Workspace", icon: <Code2 className="w-4 h-4" /> },
     { id: "automation", label: "Automation", icon: <Zap className="w-4 h-4" /> },

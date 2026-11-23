@@ -1,17 +1,22 @@
 import React, { useState } from "react";
 import { OrbitLogo } from "./OrbitLogo";
-import { Bell, Box, ChevronDown, Minus, Square, X } from "lucide-react";
+import { Bell, Box, ChevronDown, Minus, Square, X, Sparkles, Orbit } from "lucide-react";
+import { NavPage } from "../../types/agent";
 
 interface OrbitHeaderProps {
   modelName?: string;
   onModelSelect?: (model: string) => void;
   onNavigateHome?: () => void;
+  onNavigate?: (page: NavPage) => void;
+  currentPage?: NavPage;
 }
 
 export const OrbitHeader: React.FC<OrbitHeaderProps> = ({
   modelName = "Qwen3 8B",
   onModelSelect,
   onNavigateHome,
+  onNavigate,
+  currentPage = "orbit",
 }) => {
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const [hasNotification, setHasNotification] = useState(true);
@@ -61,6 +66,34 @@ export const OrbitHeader: React.FC<OrbitHeaderProps> = ({
           </span>
         </div>
       </div>
+
+      {/* Center: Mode Switcher (Orbit Core vs Nine Rooms Deck) */}
+      {onNavigate && (
+        <div className="hidden md:flex items-center p-0.5 rounded-full bg-[#0A160E]/90 border border-[rgba(156,190,153,0.18)] backdrop-blur-md shadow-sm">
+          <button
+            onClick={() => onNavigate("orbit")}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+              currentPage === "orbit"
+                ? "bg-[#9BE34A] text-[#050907] shadow-[0_0_12px_rgba(155,227,74,0.4)]"
+                : "text-[#A4ADA2] hover:text-[#F1F5ED]"
+            }`}
+          >
+            <Orbit className="w-3.5 h-3.5" />
+            <span>Orbit Core</span>
+          </button>
+          <button
+            onClick={() => onNavigate("rooms")}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+              currentPage === "rooms"
+                ? "bg-[#9BE34A] text-[#050907] shadow-[0_0_12px_rgba(155,227,74,0.4)]"
+                : "text-[#A4ADA2] hover:text-[#F1F5ED]"
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#8BE9FF]" />
+            <span>Nine Rooms</span>
+          </button>
+        </div>
+      )}
 
       {/* Right: Status Pill, Model Selector, Notification Bell, Window Controls */}
       <div className="flex items-center gap-3">
