@@ -1,6 +1,7 @@
 """
 Agent Chat Page - Real-time conversational interface with streaming local AI integration.
 Supports progressive token streaming, message persistence, stop generation, and model selection.
+Voice input via Groq Whisper is available through the 🎤 mic button (push-to-talk).
 """
 from typing import Optional, Dict, Any
 from PySide6.QtCore import Qt, QTimer, Signal
@@ -12,6 +13,7 @@ from PySide6.QtWidgets import (
 from ...core.agent import AgentCore
 from ...core.model_manager import ModelManager
 from ...database.db import db_manager
+from ...voice.voice_engine import VoiceEngine
 
 
 class ChatMessageWidget(QFrame):
@@ -349,6 +351,13 @@ class ChatPage(QWidget):
         self._active_stream_widget: Optional[ChatMessageWidget] = None
         self._active_tool_widgets: Dict[str, ToolActivityWidget] = {}
 
+        # Groq voice engine for mic button (push-to-talk in chat)
+        self._voice_engine = VoiceEngine(agent_core=self.agent_core)
+        self._voice_engine.state_changed.connect(self._on_voice_state_changed)
+        self._voice_engine.transcript_ready.connect(self._on_voice_transcript)
+        self._voice_engine.response_ready.connect(self._on_voice_response)
+        self._voice_engine.error_occurred.connect(self._on_voice_error)
+
         self._init_ui()
         self._load_conversation_history()
 
@@ -455,11 +464,11 @@ class ChatPage(QWidget):
         self.input_field.setPlaceholderText("Ask a question or give me a task...")
         self.input_field.returnPressed.connect(self._on_send_clicked)
 
-        # Mic Button Placeholder
-        mic_btn = QPushButton("🎤")
-        mic_btn.setToolTip("Voice input (Placeholder)")
-        mic_btn.setCursor(Qt.PointingHandCursor)
-        mic_btn.setStyleSheet("""
+        # Mic Button — connected to Groq voice engine (push-to-talk)
+        self.mic_btn = QPushButton("🎤")
+        self.mic_btn.setToolTip("Voice input — click to speak (Groq Whisper)")
+        self.mic_btn.setCursor(Qt.PointingHandCursor)
+        self.mic_btn.setStyleSheet("""
             QPushButton {
                 background: transparent;
                 border: none;
@@ -471,6 +480,7 @@ class ChatPage(QWidget):
                 color: #e59840;
             }
         """)
+        self.mic_btn.clicked.connect(self._on_mic_clicked)
 
         # Model Selector Dropdown & Refresh Button
         self.model_combo = QComboBox()
@@ -522,7 +532,7 @@ class ChatPage(QWidget):
 
         input_layout.addWidget(attach_btn)
         input_layout.addWidget(self.input_field, 1)
-        input_layout.addWidget(mic_btn)
+        input_layout.addWidget(self.mic_btn)
         input_layout.addWidget(self.model_combo)
         input_layout.addWidget(refresh_models_btn)
         input_layout.addWidget(self.action_btn)
@@ -767,3 +777,77 @@ class ChatPage(QWidget):
                 if item.widget():
                     item.widget().deleteLater()
             self.status_banner.setText("Conversation cleared.")
+
+    # ------------------------------------------------------------------
+    # Voice (Groq mic button) handlers
+    # ------------------------------------------------------------------
+    def _on_mic_clicked(self) -> None:
+        """Toggle voice recording on/off via Groq push-to-talk."""
+        from ...voice.voice_engine import VoiceEngine
+        state = self._voice_engine.state
+        if state == VoiceEngine.STATE_IDLE:
+            self._voice_engine.start_listening()
+        elif state == VoiceEngine.STATE_RECORDING:
+            self._voice_engine.stop_listening()
+
+    def _on_voice_state_changed(self, state: str) -> None:
+        from ...voice.voice_engine import VoiceEngine
+        if state == VoiceEngine.STATE_IDLE:
+            self.mic_btn.setText("🎤")
+            self.mic_btn.setStyleSheet("""
+                QPushButton {
+                    background: transparent; border: none;
+                    color: #8e929b; font-size: 14px; padding: 4px;
+                }
+                QPushButton:hover { color: #e59840; }
+            """)
+            self.mic_btn.setToolTip("Voice input — click to speak (Groq Whisper)")
+        elif state == VoiceEngine.STATE_RECORDING:
+            self.mic_btn.setText("⏹")
+            self.mic_btn.setStyleSheet("""
+                QPushButton {
+                    background: transparent; border: none;
+                    color: #ef4444; font-size: 16px; padding: 4px;
+                }
+                QPushButton:hover { color: #dc2626; }
+            """)
+            self.mic_btn.setToolTip("Recording… click to stop")
+            self.status_banner.setText("🎙 Listening… speak now")
+            self.status_banner.setStyleSheet("color: #ef4444; font-size: 11px;")
+        elif state == VoiceEngine.STATE_PROCESSING:
+            self.mic_btn.setText("⌛")
+            self.mic_btn.setStyleSheet("""
+                QPushButton {
+                    background: transparent; border: none;
+                    color: #e59840; font-size: 14px; padding: 4px;
+                }
+            """)
+            self.mic_btn.setToolTip("Processing voice…")
+            self.status_banner.setText("⌛ Transcribing + generating response (Groq)…")
+            self.status_banner.setStyleSheet("color: #e59840; font-size: 11px;")
+        elif state == VoiceEngine.STATE_SPEAKING:
+            self.mic_btn.setText("🔊")
+            self.mic_btn.setStyleSheet("""
+                QPushButton {
+                    background: transparent; border: none;
+                    color: #9BE34A; font-size: 14px; padding: 4px;
+                }
+            """)
+            self.mic_btn.setToolTip("Agent is speaking…")
+            self.status_banner.setText("🔊 Speaking…")
+            self.status_banner.setStyleSheet("color: #9BE34A; font-size: 11px;")
+
+    def _on_voice_transcript(self, text: str) -> None:
+        """Show the transcribed text in chat as a user message."""
+        self._append_message_widget("You (voice)", text)
+        self.status_banner.setText(f"Transcript: {text[:60]}…" if len(text) > 60 else f"Transcript: {text}")
+        self.status_banner.setStyleSheet("color: #8e929b; font-size: 11px;")
+
+    def _on_voice_response(self, text: str) -> None:
+        """Show Groq LLM response in chat as an agent message."""
+        self._append_message_widget("Agent (Groq)", text)
+
+    def _on_voice_error(self, msg: str) -> None:
+        self._append_message_widget("System", msg, is_error=True)
+        self.status_banner.setText(f"Voice error: {msg[:60]}")
+        self.status_banner.setStyleSheet("color: #f87171; font-size: 11px;")

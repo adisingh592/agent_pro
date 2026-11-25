@@ -142,7 +142,7 @@ class MainWindow(QMainWindow):
             "Browser": BrowserPage(),
             "Coding Workspace": CodingPage(),
             "Workflows": WorkflowsPage(),
-            "Voice": VoicePage(),
+            "Voice": VoicePage(self.agent_core),
             "Memory": MemoryPage(self.memory_store),
             "History": HistoryPage(),
             "Settings": SettingsPage(),
